@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals with subtle accents -->
-    <!-- Application Structure Plan: A single-page application acting as a research hub. It starts with a welcoming home section that lists available research reports as clickable cards. Upon clicking a card (e.g., Globant), the main content area dynamically switches to display the full interactive report for that specific company. A "back" button allows seamless return to the home overview. This structure is chosen for intuitive navigation and extensibility for future reports within a single HTML file. -->
-    <!-- Visualization & Content Choices: Home section -> Goal: Organize/Inform -> Clickable Cards with titles/descriptions -> Click to switch view -> Provides an overview and entry points to detailed reports -> HTML/CSS/JS. Globant Report Integration -> Goal: Inform/Explore -> Full interactive report embedded -> Seamless transition -> Reuses previous interactive report content directly within the same page, managing visibility with JS. -->
+    <!-- Application Structure Plan: A single-page application functioning as a comprehensive research hub. It features a streamlined header navigation with direct links to "Home", "Investigaciones", "WIKI", and "Principios". Content sections are dynamically shown/hidden based on navigation clicks. "Home" introduces the site, "Investigaciones" lists all research reports as clickable cards, "WIKI" defines investment terms, and "Principios" outlines key investment philosophies. This structure offers intuitive navigation, extensibility for future reports, and segmented knowledge access. -->
+    <!-- Visualization & Content Choices: Home section -> Goal: Inform -> Introductory text -> Sets context -> HTML/CSS. Investigaciones Section -> Goal: Organize/Inform -> Clickable Cards for reports -> Click to switch view -> Provides an overview and entry points to detailed reports -> HTML/CSS/JS. Globant Report Integration -> Goal: Inform/Explore -> Full interactive report embedded -> Seamless transition -> Reuses previous interactive report content. WIKI Section -> Goal: Inform/Organize -> Expandable Cards for definitions -> Click to reveal details -> Efficiently presents multiple terms -> HTML/CSS/JS. Principios Section -> Goal: Inform/Educate -> Structured text blocks with headings -> Clear explanation of concepts -> HTML/CSS. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -57,13 +57,19 @@
         .nav-link:hover {
             color: #4A90E2;
         }
-        .risk-opp-card .details {
+        .expandable-card .details {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.5s ease-in-out;
         }
-        .risk-opp-card.open .details {
-            max-height: 500px;
+        .expandable-card.open .details {
+            max-height: 500px; /* Adjust as needed for content length */
+        }
+        .expandable-card button .arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .expandable-card.open button .arrow {
+            transform: rotate(180deg);
         }
     </style>
 </head>
@@ -78,7 +84,9 @@
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
                         <button id="homeNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Inicio</button>
-                        <button id="globantNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Globant</button>
+                        <button id="investigacionesNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Investigaciones</button>
+                        <button id="wikiNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">WIKI</button>
+                        <button id="principiosNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Principios</button>
                     </div>
                 </div>
             </div>
@@ -87,34 +95,67 @@
 
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
 
-        <!-- Italoserch Home View -->
-        <section id="italoserch-home" class="mb-16">
+        <!-- Home View -->
+        <section id="italoserch-home" class="view-section">
             <div class="text-center mb-16">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">Bienvenido a Italoserch</h1>
                 <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">Tu centro personal para la investigación y el análisis de inversiones.</p>
+                <p class="mt-2 text-md text-gray-500 max-w-xl mx-auto">Explora nuestras investigaciones, aprende sobre terminología clave y descubre principios fundamentales de inversión.</p>
             </div>
 
+            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Explora Más</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Navega a nuestras secciones dedicadas para un conocimiento más profundo.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                 <div id="quick-link-investigaciones" class="main-card p-6 rounded-lg cursor-pointer text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Investigaciones de Empresas</h3>
+                    <p class="text-gray-600">Accede a nuestros análisis detallados de empresas para tomar decisiones informadas.</p>
+                    <button class="mt-4 inline-block bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">Ver Investigaciones</button>
+                </div>
+                <div id="quick-link-wiki" class="main-card p-6 rounded-lg cursor-pointer text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">WIKI de Inversión</h3>
+                    <p class="text-gray-600">Aprende la jerga del mercado con definiciones claras de los términos más importantes.</p>
+                    <button class="mt-4 inline-block bg-teal-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-teal-600 transition-colors">Explorar WIKI</button>
+                </div>
+                <div id="quick-link-principios" class="main-card p-6 rounded-lg cursor-pointer text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Principios de Inversión</h3>
+                    <p class="text-gray-600">Descubre las filosofías que guían a los inversores más exitosos, como Warren Buffett.</p>
+                    <button class="mt-4 inline-block bg-purple-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-purple-600 transition-colors">Ver Principios</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Investigaciones Section -->
+        <section id="investigaciones-section" class="hidden view-section">
+            <div class="flex justify-start mb-6">
+                <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Volver al Inicio</span>
+                </button>
+            </div>
             <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Nuestras Investigaciones</h2>
             <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Explora nuestros análisis detallados de empresas para tomar decisiones de inversión informadas.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div id="globant-card" class="main-card p-6 rounded-lg cursor-pointer">
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">Análisis de Inversión: Globant (GLOB)</h3>
-                    <p class="text-gray-600">Un estudio profundo sobre las finanzas, valoración, riesgos y oportunidades de Globant, analizando si es un momento clave para la inversión.</p>
+                    <p class="text-gray-600">Un estudio profundo sobre las finanzas, valoración, riesgos y oportunidades de Globant.</p>
                     <button class="mt-4 inline-block bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">Ver Análisis</button>
                 </div>
                 <!-- Future research cards will go here -->
             </div>
         </section>
 
-        <!-- Globant Analysis View (Initially Hidden) -->
-        <section id="globant-analysis-view" class="hidden">
+        <!-- Globant Analysis View -->
+        <section id="globant-analysis-view" class="hidden view-section">
             <div class="flex justify-start mb-6">
-                <button id="backToHomeBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                     </svg>
-                    <span>Volver a Italoserch Home</span>
+                    <span>Volver a Investigaciones</span>
                 </button>
             </div>
 
@@ -225,7 +266,7 @@
                             <span class="text-3xl">🚀</span> Oportunidades
                         </h3>
                         <div class="space-y-4">
-                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                            <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                                 <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
                                     Crecimiento Secular en IA y Transformación Digital
                                     <span class="arrow text-xl transform transition-transform">▼</span>
@@ -234,7 +275,7 @@
                                     <p>Globant está perfectamente posicionada para capitalizar las tendencias a largo plazo e irreversibles de la adopción de la IA y la digitalización de las empresas, que son fundamentales para la economía moderna.</p>
                                 </div>
                             </div>
-                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                            <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                                 <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
                                     Fuerte Cartera de Proyectos
                                     <span class="arrow text-xl transform transition-transform">▼</span>
@@ -243,7 +284,7 @@
                                     <p>Una cartera de ventas en máximos históricos ($3.7B) sugiere un gran potencial de ingresos futuros una vez que las condiciones macroeconómicas mejoren y los proyectos se conviertan en ingresos.</p>
                                 </div>
                             </div>
-                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                            <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                                 <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
                                     Potencial de Subvaloración
                                     <span class="arrow text-xl transform transition-transform">▼</span>
@@ -259,7 +300,7 @@
                             <span class="text-3xl">⚠️</span> Riesgos
                         </h3>
                         <div class="space-y-4">
-                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                            <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                                 <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
                                     Vientos en Contra Macroeconómicos
                                     <span class="arrow text-xl transform transition-transform">▼</span>
@@ -268,7 +309,7 @@
                                     <p>Una desaceleración económica prolongada o una recesión, especialmente en EE. UU., podría seguir suprimiendo el gasto de los clientes y retrasar la conversión de la cartera de proyectos en ingresos reales.</p>
                                 </div>
                             </div>
-                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                            <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                                 <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
                                     Competencia Intensa
                                     <span class="arrow text-xl transform transition-transform">▼</span>
@@ -277,7 +318,7 @@
                                     <p>El mercado de servicios de IA y transformación digital es altamente competitivo, con gigantes como Accenture e IBM que tienen más recursos. Globant debe innovar constantemente para diferenciarse.</p>
                                 </div>
                             </div>
-                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                            <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                                 <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
                                     Riesgo de Ejecución
                                     <span class="arrow text-xl transform transition-transform">▼</span>
@@ -308,6 +349,106 @@
             <!-- Content of Globant Investment Dashboard SPA ends here -->
 
         </section>
+
+        <!-- WIKI Section -->
+        <section id="wiki-section" class="hidden view-section">
+            <div class="flex justify-start mb-6">
+                <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Volver al Inicio</span>
+                </button>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">WIKI de Inversión</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Explora definiciones claras de los términos y conceptos clave utilizados en el mundo de la inversión y el análisis financiero.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Ratio P/E (Precio/Ganancias)
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>El Ratio Precio/Ganancias (Price-to-Earnings, P/E) es una métrica de valoración que compara el precio actual de la acción de una empresa con sus ganancias por acción (EPS). Indica cuántas veces están los inversores dispuestos a pagar por cada dólar de ganancias. Un P/E alto puede sugerir que la acción está sobrevalorada o que se esperan grandes crecimientos futuros, mientras que un P/E bajo podría indicar subvaloración o expectativas de bajo crecimiento.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        EPS (Ganancias por Acción)
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>Las Ganancias por Acción (Earnings Per Share, EPS) es la porción de las ganancias de una empresa asignada a cada acción ordinaria en circulación. Es un indicador clave de la rentabilidad de una empresa y se calcula dividiendo las ganancias netas entre el número de acciones en circulación. Un EPS creciente es generalmente positivo para los inversores.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        DCF (Flujo de Caja Descontado)
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>El Flujo de Caja Descontado (Discounted Cash Flow, DCF) es un método de valoración que se utiliza para estimar el valor de una inversión basándose en sus flujos de caja futuros esperados. Se descuentan esos flujos de caja futuros a su valor presente utilizando una tasa de descuento, para determinar el valor intrínseco de la empresa hoy. Es una herramienta poderosa para determinar si una inversión está subvalorada o sobrevalorada.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Foso Competitivo (Moat)
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>Un "Foso Competitivo" (Moat) se refiere a las ventajas sostenibles que tiene una empresa sobre sus competidores, lo que le permite proteger sus ganancias a largo plazo. Estos fosos pueden incluir activos intangibles (marcas fuertes, patentes), costes de cambio altos para los clientes, ventajas de coste, economías de escala o efectos de red. Warren Buffett popularizó este concepto.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Margen de Seguridad
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>El "Margen de Seguridad" es un principio de inversión que implica comprar acciones cuando su precio de mercado está significativamente por debajo de su valor intrínseco estimado. Benjamin Graham, mentor de Warren Buffett, popularizó este concepto. Actúa como un amortiguador contra errores de juicio o eventos económicos adversos, protegiendo al inversor de pérdidas significativas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Principios de Inversión Section -->
+        <section id="principios-section" class="hidden view-section">
+            <div class="flex justify-start mb-6">
+                <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Volver al Inicio</span>
+                </button>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Principios Clave de Inversión</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Filosofías probadas para analizar empresas y tomar decisiones de inversión inteligentes, inspiradas en grandes inversores como Warren Buffett.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">1. Invierte en lo que Entiendes</h3>
+                    <p class="text-gray-600">No inviertas en un negocio si no puedes explicar cómo funciona o por qué tiene una ventaja competitiva duradera. La complejidad es el enemigo de la buena inversión.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">2. Calidad sobre Cantidad</h3>
+                    <p class="text-gray-600">Es mejor poseer un pequeño número de empresas excelentes que un gran número de empresas mediocres. Busca negocios con "fosos competitivos" sólidos que protejan sus ganancias.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">3. Pensamiento a Largo Plazo</h3>
+                    <p class="text-gray-600">Considera la empresa como un negocio completo, no solo como una acción con un precio volátil. Enfócate en su desempeño a largo plazo, no en las fluctuaciones diarias del mercado.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">4. Margen de Seguridad</h3>
+                    <p class="text-gray-600">Compra acciones solo cuando su precio de mercado sea significativamente inferior a su valor intrínseco. Esto te protege de posibles errores de cálculo y de las caídas inesperadas del mercado.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">5. La Paciencia es una Virtud</h3>
+                    <p class="text-gray-600">Una vez que has invertido en una gran empresa a un precio justo, la paciencia es clave. Deja que el interés compuesto haga su magia y evita la tentación de reaccionar a cada noticia o movimiento del mercado.</p>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="bg-gray-800 text-white mt-16">
@@ -318,33 +459,90 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const italoserchHome = document.getElementById('italoserch-home');
+            // Get all view sections
+            const homeSection = document.getElementById('italoserch-home');
+            const investigacionesSection = document.getElementById('investigaciones-section');
             const globantAnalysisView = document.getElementById('globant-analysis-view');
-            const globantCard = document.getElementById('globant-card');
-            const backToHomeBtn = document.getElementById('backToHomeBtn');
-            const homeButton = document.getElementById('homeButton');
+            const wikiSection = document.getElementById('wiki-section');
+            const principiosSection = document.getElementById('principios-section');
+
+            // Navigation buttons
+            const homeButton = document.getElementById('homeButton'); // Italoserch brand button
             const homeNavLink = document.getElementById('homeNavLink');
-            const globantNavLink = document.getElementById('globantNavLink');
+            const investigacionesNavLink = document.getElementById('investigacionesNavLink');
+            const wikiNavLink = document.getElementById('wikiNavLink');
+            const principiosNavLink = document.getElementById('principiosNavLink');
 
-            function showHome() {
-                italoserchHome.classList.remove('hidden');
-                globantAnalysisView.classList.add('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Quick links from home page
+            const quickLinkInvestigaciones = document.getElementById('quick-link-investigaciones');
+            const quickLinkWiki = document.getElementById('quick-link-wiki');
+            const quickLinkPrincipios = document.getElementById('quick-link-principios');
+
+            // Card specific buttons
+            const globantCard = document.getElementById('globant-card');
+
+            // Back to home buttons (common for all sub-sections)
+            const backToHomeBtns = document.querySelectorAll('.back-to-home');
+
+            // Function to show a specific section and hide others
+            function showSection(sectionToShow) {
+                [homeSection, investigacionesSection, globantAnalysisView, wikiSection, principiosSection].forEach(section => {
+                    section.classList.add('hidden');
+                });
+                sectionToShow.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
             }
 
-            function showGlobantAnalysis() {
-                italoserchHome.classList.add('hidden');
-                globantAnalysisView.classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                initializeGlobantCharts(); // Re-initialize charts when view becomes visible
+            // Event Listeners for main navigation
+            homeButton.addEventListener('click', () => showSection(homeSection));
+            homeNavLink.addEventListener('click', () => showSection(homeSection));
+            investigacionesNavLink.addEventListener('click', () => showSection(investigacionesSection));
+            wikiNavLink.addEventListener('click', () => showSection(wikiSection));
+            principiosNavLink.addEventListener('click', () => showSection(principiosSection));
+
+            // Event Listeners for quick links from home
+            if (quickLinkInvestigaciones) {
+                quickLinkInvestigaciones.addEventListener('click', () => showSection(investigacionesSection));
+            }
+            if (quickLinkWiki) {
+                quickLinkWiki.addEventListener('click', () => showSection(wikiSection));
+            }
+            if (quickLinkPrincipios) {
+                quickLinkPrincipios.addEventListener('click', () => showSection(principiosSection));
             }
 
-            globantCard.addEventListener('click', showGlobantAnalysis);
-            backToHomeBtn.addEventListener('click', showHome);
-            homeButton.addEventListener('click', showHome);
-            homeNavLink.addEventListener('click', showHome);
-            globantNavLink.addEventListener('click', showGlobantAnalysis);
+            // Event listener for Globant card (from Investigaciones section)
+            if (globantCard) {
+                globantCard.addEventListener('click', () => {
+                    showSection(globantAnalysisView);
+                    initializeGlobantCharts(); // Re-initialize charts when Globant view becomes visible
+                });
+            }
 
+            // Event listeners for "Volver al Inicio" buttons
+            backToHomeBtns.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Check if the current view is Globant Analysis, then go to Investigaciones instead of Home
+                    if (!globantAnalysisView.classList.contains('hidden')) {
+                         showSection(investigacionesSection);
+                         // Change button text if we are in Globant section and going back to Investigaciones
+                         button.querySelector('span').textContent = 'Volver a Investigaciones';
+                    } else {
+                        showSection(homeSection);
+                        // Reset button text for other back buttons
+                        button.querySelector('span').textContent = 'Volver al Inicio';
+                    }
+                });
+            });
+
+            // Specific logic for Globant Analysis back button (from Globant to Investigaciones)
+            const globantBackBtn = globantAnalysisView.querySelector('.back-to-home');
+            if (globantBackBtn) {
+                globantBackBtn.addEventListener('click', (event) => {
+                    event.preventDefault(); // Prevent default back-to-home behavior
+                    showSection(investigacionesSection);
+                });
+            }
 
             // Globant specific data and chart initialization logic (reused from previous turn)
             const reportData = {
@@ -591,25 +789,19 @@
                         }
                     });
                 }
+            }
 
-                const riskOppCards = document.querySelectorAll('#globant-analysis-view .risk-opp-card button');
-                riskOppCards.forEach(button => {
-                    button.removeEventListener('click', toggleRiskOppCard); // Remove previous listeners
-                    button.addEventListener('click', toggleRiskOppCard); // Add new listener
+            // Expandable card logic for WIKI and Risks/Opps sections
+            const expandableCards = document.querySelectorAll('.expandable-card button');
+            expandableCards.forEach(button => {
+                button.addEventListener('click', () => {
+                    const card = button.parentElement;
+                    card.classList.toggle('open');
                 });
-            }
+            });
 
-            function toggleRiskOppCard(event) {
-                const button = event.currentTarget;
-                const card = button.parentElement;
-                card.classList.toggle('open');
-                const arrow = button.querySelector('.arrow');
-                if (card.classList.contains('open')) {
-                    arrow.style.transform = 'rotate(180deg)';
-                } else {
-                    arrow.style.transform = 'rotate(0deg)';
-                }
-            }
+            // Initial view
+            showSection(homeSection);
         });
     </script>
 </body>
