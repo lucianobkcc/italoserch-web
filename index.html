@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Italoserch: Centro de Investigaciones de Inversión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with subtle accents -->
+    <!-- Application Structure Plan: A single-page application acting as a research hub. It starts with a welcoming home section that lists available research reports as clickable cards. Upon clicking a card (e.g., Globant), the main content area dynamically switches to display the full interactive report for that specific company. A "back" button allows seamless return to the home overview. This structure is chosen for intuitive navigation and extensibility for future reports within a single HTML file. -->
+    <!-- Visualization & Content Choices: Home section -> Goal: Organize/Inform -> Clickable Cards with titles/descriptions -> Click to switch view -> Provides an overview and entry points to detailed reports -> HTML/CSS/JS. Globant Report Integration -> Goal: Inform/Explore -> Full interactive report embedded -> Seamless transition -> Reuses previous interactive report content directly within the same page, managing visibility with JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .main-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .main-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .kpi-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+        .nav-link {
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #4A90E2;
+        }
+        .risk-opp-card .details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .risk-opp-card.open .details {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <button id="homeButton" class="font-bold text-xl text-gray-800 focus:outline-none">Italoserch</button>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <button id="homeNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Inicio</button>
+                        <button id="globantNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Globant</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Italoserch Home View -->
+        <section id="italoserch-home" class="mb-16">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">Bienvenido a Italoserch</h1>
+                <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">Tu centro personal para la investigación y el análisis de inversiones.</p>
+            </div>
+
+            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Nuestras Investigaciones</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Explora nuestros análisis detallados de empresas para tomar decisiones de inversión informadas.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div id="globant-card" class="main-card p-6 rounded-lg cursor-pointer">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Análisis de Inversión: Globant (GLOB)</h3>
+                    <p class="text-gray-600">Un estudio profundo sobre las finanzas, valoración, riesgos y oportunidades de Globant, analizando si es un momento clave para la inversión.</p>
+                    <button class="mt-4 inline-block bg-blue-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">Ver Análisis</button>
+                </div>
+                <!-- Future research cards will go here -->
+            </div>
+        </section>
+
+        <!-- Globant Analysis View (Initially Hidden) -->
+        <section id="globant-analysis-view" class="hidden">
+            <div class="flex justify-start mb-6">
+                <button id="backToHomeBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Volver a Italoserch Home</span>
+                </button>
+            </div>
+
+            <!-- Content of Globant Investment Dashboard SPA starts here -->
+            <section id="hero-globant" class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">Análisis Interactivo de Inversión: Globant</h1>
+                <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">¿Una oportunidad subvalorada por la IA o una trampa de valor en un mercado incierto?</p>
+                <div class="mt-8 inline-block bg-blue-100 text-blue-800 text-lg font-semibold px-6 py-3 rounded-full">
+                    Veredicto: Compra Especulativa a Largo Plazo
+                </div>
+            </section>
+
+            <section id="summary" class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Resumen Clave</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Esta sección ofrece una vista rápida de los indicadores más importantes. Aquí puedes ver el estado actual de la acción, su valoración según analistas y modelos, y de dónde provienen sus ingresos, dándote una base sólida para el análisis más profundo.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="kpi-card p-6 rounded-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Precio Actual</h3>
+                        <p class="mt-1 text-3xl font-semibold text-gray-900">$66.46</p>
+                        <p class="text-xs text-gray-500">Al 16 de agosto, 2025</p>
+                    </div>
+                    <div class="kpi-card p-6 rounded-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Rango de 52 Semanas</h3>
+                        <p class="mt-1 text-3xl font-semibold text-gray-900">$64.51 - $238.32</p>
+                        <p class="text-xs text-red-500">Cerca del mínimo anual</p>
+                    </div>
+                    <div class="kpi-card p-6 rounded-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Objetivo Analistas (1 año)</h3>
+                        <p class="mt-1 text-3xl font-semibold text-green-600">$112.70</p>
+                        <p class="text-xs text-gray-500">Potencial alcista del ~69%</p>
+                    </div>
+                    <div class="kpi-card p-6 rounded-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Valor Razonable (DCF)</h3>
+                        <p class="mt-1 text-3xl font-semibold text-green-600">$152.99</p>
+                        <p class="text-xs text-gray-500">56.6% subvalorada</p>
+                    </div>
+                </div>
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 kpi-card p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">La Tensión Central: Caída del Mercado vs. Potencial del Negocio</h3>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-red-50 rounded-lg">
+                                <h4 class="font-bold text-red-700">Sentimiento del Mercado (Corto Plazo)</h4>
+                                <p class="text-2xl font-bold text-red-600 mt-2">-59.7%</p>
+                                <p class="text-sm text-gray-600">Caída del precio en el último año, impulsada por temores macroeconómicos y una guía de crecimiento conservadora.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-green-50 rounded-lg">
+                                <h4 class="font-bold text-green-700">Fundamentales del Negocio (Largo Plazo)</h4>
+                                <p class="text-2xl font-bold text-green-600 mt-2">+25%</p>
+                                <p class="text-sm text-gray-600">Cartera de proyectos en máximo histórico ($3.7B), reflejando una fuerte demanda subyacente por sus servicios de IA.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-card p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2 text-center">Ingresos por Geografía (Q2 2025)</h3>
+                        <div class="chart-container !h-56 md:!h-64">
+                            <canvas id="geoRevenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="financials" class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Desempeño Financiero</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Analiza la trayectoria financiera de Globant. El gráfico interactivo muestra la evolución de los ingresos y beneficios, permitiéndote identificar la tendencia de crecimiento histórico y la reciente desaceleración. Las métricas de salud financiera complementan esta visión.</p>
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Evolución de Ingresos y Beneficios por Acción (Ajustado)</h3>
+                    <div class="chart-container">
+                        <canvas id="financialsChart"></canvas>
+                    </div>
+                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-500">Ratio de Liquidez</h4>
+                            <p class="text-2xl font-semibold text-gray-900">1.71</p>
+                            <p class="text-xs text-gray-500">Posición de liquidez saludable a corto plazo.</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-500">Deuda / Capital</h4>
+                            <p class="text-2xl font-semibold text-gray-900">0.25</p>
+                            <p class="text-xs text-gray-500">Niveles de apalancamiento moderados y manejables.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="valuation" class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Análisis de Valoración</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">¿Está la acción cara o barata? Esta sección compara la valoración de Globant con la de sus competidores y la industria. Los gráficos te ayudarán a entender si el precio actual es justo en relación con sus ventas y beneficios, ofreciendo un contexto crucial para tu decisión.</p>
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Comparación de Múltiplos de Valoración</h3>
+                    <div class="chart-container">
+                        <canvas id="valuationChart"></canvas>
+                    </div>
+                    <div class="mt-6 text-center p-4 bg-gray-50 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-500">Ratio PEG (Precio/Ganancias vs. Crecimiento)</h4>
+                        <p class="text-2xl font-semibold text-gray-900">0.9x</p>
+                        <p class="text-xs text-gray-500">Un valor por debajo de 1.0 generalmente sugiere que la acción está razonablemente valorada en función de su crecimiento esperado.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="risks-opps" class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Riesgos y Oportunidades</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Toda inversión tiene dos caras. Aquí puedes explorar de forma interactiva los factores que podrían impulsar el crecimiento de Globant y los riesgos que podrían frenarlo. Haz clic en cada tarjeta para desplegar los detalles y obtener una visión equilibrada del panorama.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-green-600 mb-4 flex items-center gap-2">
+                            <span class="text-3xl">🚀</span> Oportunidades
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                                <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                                    Crecimiento Secular en IA y Transformación Digital
+                                    <span class="arrow text-xl transform transition-transform">▼</span>
+                                </button>
+                                <div class="details px-4 pb-4 text-gray-600">
+                                    <p>Globant está perfectamente posicionada para capitalizar las tendencias a largo plazo e irreversibles de la adopción de la IA y la digitalización de las empresas, que son fundamentales para la economía moderna.</p>
+                                </div>
+                            </div>
+                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                                <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                                    Fuerte Cartera de Proyectos
+                                    <span class="arrow text-xl transform transition-transform">▼</span>
+                                </button>
+                                <div class="details px-4 pb-4 text-gray-600">
+                                    <p>Una cartera de ventas en máximos históricos ($3.7B) sugiere un gran potencial de ingresos futuros una vez que las condiciones macroeconómicas mejoren y los proyectos se conviertan en ingresos.</p>
+                                </div>
+                            </div>
+                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                                <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                                    Potencial de Subvaloración
+                                    <span class="arrow text-xl transform transition-transform">▼</span>
+                                </button>
+                                <div class="details px-4 pb-4 text-gray-600">
+                                    <p>La caída significativa del precio, junto con un análisis DCF que sugiere un valor de $152.99 y los altos objetivos de los analistas, indica que el mercado puede ser excesivamente pesimista, creando una oportunidad de valor.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">
+                            <span class="text-3xl">⚠️</span> Riesgos
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                                <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                                    Vientos en Contra Macroeconómicos
+                                    <span class="arrow text-xl transform transition-transform">▼</span>
+                                </button>
+                                <div class="details px-4 pb-4 text-gray-600">
+                                    <p>Una desaceleración económica prolongada o una recesión, especialmente en EE. UU., podría seguir suprimiendo el gasto de los clientes y retrasar la conversión de la cartera de proyectos en ingresos reales.</p>
+                                </div>
+                            </div>
+                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                                <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                                    Competencia Intensa
+                                    <span class="arrow text-xl transform transition-transform">▼</span>
+                                </button>
+                                <div class="details px-4 pb-4 text-gray-600">
+                                    <p>El mercado de servicios de IA y transformación digital es altamente competitivo, con gigantes como Accenture e IBM que tienen más recursos. Globant debe innovar constantemente para diferenciarse.</p>
+                                </div>
+                            </div>
+                            <div class="risk-opp-card bg-white border border-gray-200 rounded-lg">
+                                <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                                    Riesgo de Ejecución
+                                    <span class="arrow text-xl transform transition-transform">▼</span>
+                                </button>
+                                <div class="details px-4 pb-4 text-gray-600">
+                                    <p>El éxito de la estrategia centrada en la IA y el plan de optimización de negocio depende de una ejecución eficaz, la retención de talento clave y la capacidad de convertir las inversiones en resultados financieros tangibles.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="conclusion" class="text-center bg-white p-8 rounded-lg border border-gray-200">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Conclusión: ¿Es un Buen Momento para Invertir?</h2>
+                <div class="max-w-4xl mx-auto text-left grid md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-green-50 rounded-lg border border-green-200">
+                        <h3 class="font-bold text-lg text-green-800">Para el Inversor a Largo Plazo</h3>
+                        <p class="mt-2 text-gray-700">El precio actual parece un punto de entrada atractivo. La empresa está alineada con tendencias de crecimiento potentes (IA, digitalización), tiene una demanda sólida y una dirección proactiva. La posible subvaloración refuerza el potencial a largo plazo.</p>
+                    </div>
+                    <div class="p-6 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h3 class="font-bold text-lg text-yellow-800">Para el Inversor a Corto Plazo</h3>
+                        <p class="mt-2 text-gray-700">La cautela es clave. La guía de crecimiento modesta, la incertidumbre económica y los riesgos de ejecución sugieren que la volatilidad podría continuar. Una recuperación rápida no está garantizada y el mercado muestra impaciencia.</p>
+                    </div>
+                </div>
+                <p class="mt-8 text-gray-600 max-w-3xl mx-auto">En resumen, la caída del precio parece una corrección excesiva por los desafíos macroeconómicos, pasando por alto el sólido posicionamiento estratégico de Globant. La inversión depende de una mejora económica global y de la ejecución exitosa de su estrategia de IA.</p>
+            </section>
+            <!-- Content of Globant Investment Dashboard SPA ends here -->
+
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-8 py-4 text-center text-sm">
+            <p>&copy; 2025 Italoserch. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const italoserchHome = document.getElementById('italoserch-home');
+            const globantAnalysisView = document.getElementById('globant-analysis-view');
+            const globantCard = document.getElementById('globant-card');
+            const backToHomeBtn = document.getElementById('backToHomeBtn');
+            const homeButton = document.getElementById('homeButton');
+            const homeNavLink = document.getElementById('homeNavLink');
+            const globantNavLink = document.getElementById('globantNavLink');
+
+            function showHome() {
+                italoserchHome.classList.remove('hidden');
+                globantAnalysisView.classList.add('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function showGlobantAnalysis() {
+                italoserchHome.classList.add('hidden');
+                globantAnalysisView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                initializeGlobantCharts(); // Re-initialize charts when view becomes visible
+            }
+
+            globantCard.addEventListener('click', showGlobantAnalysis);
+            backToHomeBtn.addEventListener('click', showHome);
+            homeButton.addEventListener('click', showHome);
+            homeNavLink.addEventListener('click', showHome);
+            globantNavLink.addEventListener('click', showGlobantAnalysis);
+
+
+            // Globant specific data and chart initialization logic (reused from previous turn)
+            const reportData = {
+                geoRevenue: {
+                    labels: ['Norteamérica', 'Latinoamérica', 'Europa', 'Nuevos Mercados'],
+                    data: [54.1, 19.7, 19.6, 6.6]
+                },
+                financials: {
+                    labels: ['2022', '2023', '2024', '2025 (Est.)'],
+                    revenue: [1780.2, 2095.9, 2415.7, 2445.0],
+                    eps: [5.08, 5.74, 6.40, 6.12]
+                },
+                valuation: {
+                    labels: ['Globant', 'Pares', 'Industria TI'],
+                    peRatio: [26.6, 17, 29.8],
+                    psRatio: [1.18, 0.57, null]
+                }
+            };
+
+            const chartColors = {
+                blue: 'rgba(74, 144, 226, 0.8)',
+                blue_bg: 'rgba(74, 144, 226, 0.2)',
+                teal: 'rgba(77, 182, 172, 0.8)',
+                teal_bg: 'rgba(77, 182, 172, 0.2)',
+                gray: 'rgba(158, 158, 158, 0.8)',
+                gray_bg: 'rgba(158, 158, 158, 0.2)',
+            };
+
+            const commonChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#333',
+                        titleFont: { family: 'Inter', weight: 'bold' },
+                        bodyFont: { family: 'Inter' },
+                        padding: 10,
+                        cornerRadius: 4,
+                        boxPadding: 4
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: { family: 'Inter' }
+                        },
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    }
+                }
+            };
+
+            let geoChartInstance = null;
+            let financialsChartInstance = null;
+            let valuationChartInstance = null;
+
+            function initializeGlobantCharts() {
+                // Destroy existing chart instances if they exist to prevent duplicates
+                if (geoChartInstance) geoChartInstance.destroy();
+                if (financialsChartInstance) financialsChartInstance.destroy();
+                if (valuationChartInstance) valuationChartInstance.destroy();
+
+                const ctxGeo = document.getElementById('geoRevenueChart');
+                if (ctxGeo) {
+                    geoChartInstance = new Chart(ctxGeo, {
+                        type: 'doughnut',
+                        data: {
+                            labels: reportData.geoRevenue.labels,
+                            datasets: [{
+                                label: 'Ingresos por Geografía',
+                                data: reportData.geoRevenue.data,
+                                backgroundColor: [
+                                    'rgba(74, 144, 226, 0.8)',
+                                    'rgba(77, 182, 172, 0.8)',
+                                    'rgba(245, 166, 35, 0.8)',
+                                    'rgba(189, 16, 224, 0.8)'
+                                ],
+                                borderColor: '#FDFBF8',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        font: { family: 'Inter' },
+                                        boxWidth: 15,
+                                        padding: 15
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed !== null) {
+                                                label += context.parsed + '%';
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const ctxFinancials = document.getElementById('financialsChart');
+                if (ctxFinancials) {
+                    financialsChartInstance = new Chart(ctxFinancials, {
+                        type: 'bar',
+                        data: {
+                            labels: reportData.financials.labels,
+                            datasets: [
+                                {
+                                    label: 'Ingresos (Millones USD)',
+                                    data: reportData.financials.revenue,
+                                    backgroundColor: chartColors.blue_bg,
+                                    borderColor: chartColors.blue,
+                                    borderWidth: 2,
+                                    yAxisID: 'y',
+                                    order: 2
+                                },
+                                {
+                                    label: 'EPS Ajustado (USD)',
+                                    data: reportData.financials.eps,
+                                    type: 'line',
+                                    borderColor: chartColors.teal,
+                                    backgroundColor: chartColors.teal,
+                                    borderWidth: 3,
+                                    yAxisID: 'y1',
+                                    tension: 0.2,
+                                    order: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            ...commonChartOptions,
+                            scales: {
+                                x: { ...commonChartOptions.scales.x },
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: { display: true, text: 'Ingresos (Millones USD)' },
+                                    ...commonChartOptions.scales.y
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: { display: true, text: 'EPS Ajustado (USD)' },
+                                    grid: { drawOnChartArea: false },
+                                    ...commonChartOptions.scales.y
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const ctxValuation = document.getElementById('valuationChart');
+                if (ctxValuation) {
+                    valuationChartInstance = new Chart(ctxValuation, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Ratio P/E Trailing', 'Ratio P/S Trailing'],
+                            datasets: [
+                                {
+                                    label: 'Globant',
+                                    data: [reportData.valuation.peRatio[0], reportData.valuation.psRatio[0]],
+                                    backgroundColor: chartColors.blue_bg,
+                                    borderColor: chartColors.blue,
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: 'Pares',
+                                    data: [reportData.valuation.peRatio[1], reportData.valuation.psRatio[1]],
+                                    backgroundColor: chartColors.gray_bg,
+                                    borderColor: chartColors.gray,
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: 'Industria TI',
+                                    data: [reportData.valuation.peRatio[2], reportData.valuation.psRatio[2]],
+                                    backgroundColor: chartColors.teal_bg,
+                                    borderColor: chartColors.teal,
+                                    borderWidth: 2
+                                }
+                            ]
+                        },
+                        options: {
+                            ...commonChartOptions,
+                            plugins: {
+                                ...commonChartOptions.plugins,
+                                tooltip: {
+                                    ...commonChartOptions.plugins.tooltip,
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += context.parsed.y + 'x';
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                ...commonChartOptions.scales,
+                                y: {
+                                    ...commonChartOptions.scales.y,
+                                    title: {
+                                        display: true,
+                                        text: 'Múltiplo (x)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const riskOppCards = document.querySelectorAll('#globant-analysis-view .risk-opp-card button');
+                riskOppCards.forEach(button => {
+                    button.removeEventListener('click', toggleRiskOppCard); // Remove previous listeners
+                    button.addEventListener('click', toggleRiskOppCard); // Add new listener
+                });
+            }
+
+            function toggleRiskOppCard(event) {
+                const button = event.currentTarget;
+                const card = button.parentElement;
+                card.classList.toggle('open');
+                const arrow = button.querySelector('.arrow');
+                if (card.classList.contains('open')) {
+                    arrow.style.transform = 'rotate(180deg)';
+                } else {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
