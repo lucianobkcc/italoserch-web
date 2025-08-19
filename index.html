@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Italoserch: Centro de Investigaciones de Inversión</title>
+    <title>Italosearch: Centro de Investigaciones y Herramientas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals with subtle accents -->
-    <!-- Application Structure Plan: A single-page application functioning as a comprehensive research hub. It features a streamlined header navigation with direct links to "Home", "Investigaciones", "WIKI", and "Principios". Content sections are dynamically shown/hidden based on navigation clicks. "Home" introduces the site, "Investigaciones" lists all research reports as clickable cards, "WIKI" defines investment terms, and "Principios" outlines key investment philosophies. This structure offers intuitive navigation, extensibility for future reports, and segmented knowledge access. -->
-    <!-- Visualization & Content Choices: Home section -> Goal: Inform -> Introductory text -> Sets context -> HTML/CSS. Investigaciones Section -> Goal: Organize/Inform -> Clickable Cards for reports -> Click to switch view -> Provides an overview and entry points to detailed reports -> HTML/CSS/JS. Globant Report Integration -> Goal: Inform/Explore -> Full interactive report embedded -> Seamless transition -> Reuses previous interactive report content. WIKI Section -> Goal: Inform/Organize -> Expandable Cards for definitions -> Click to reveal details -> Efficiently presents multiple terms -> HTML/CSS/JS. Principios Section -> Goal: Inform/Educate -> Structured text blocks with headings -> Clear explanation of concepts -> HTML/CSS. -->
+    <!-- Application Structure Plan: A single-page application serving as a comprehensive investment hub. The header navigation now includes "Inicio", "Investigaciones", "WIKI", "Principios", "Bitcoin", and "Herramientas". Each navigation item dynamically reveals its corresponding content section. The "Herramientas" section contains two distinct financial calculators (Bitcoin DCA and Compound Interest). Background colors change based on the active section (light orange for Bitcoin, light blue for others). A dynamic raining effect of Bitcoin coins is present only on the Bitcoin section. This structure provides intuitive navigation, clear segregation of content types, and extensible for future additions. -->
+    <!-- Visualization & Content Choices: Expandable Cards (Wiki, Crypto, Risks/Opps) -> Goal: Inform/Organize -> Clickable cards with hidden details -> Enhanced readability, prevents information overload. Bitcoin DCA Calculator -> Goal: Simulate/Educate -> Interactive inputs, Chart.js line chart -> Visualizes potential growth, user-driven exploration. Compound Interest Calculator -> Goal: Calculate/Educate -> Interactive inputs, Chart.js line chart -> Demonstrates power of compounding, user-driven exploration. Dynamic background colors and Bitcoin coin rain effect -> Goal: Aesthetic/Thematic for Bitcoin section, clean for others. All charts are responsive and use Canvas. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #FDFBF8;
+            transition: background-color 0.5s ease; /* Smooth transition for background color */
             color: #383838;
+            overflow-x: hidden; /* Prevent horizontal scroll due to rain elements */
         }
+        .bg-custom-blue-light { background-color: #F0F8FF; } /* AliceBlue (celeste claro) */
+        .bg-custom-orange-light { background-color: #FFF8EB; } /* Slightly more orange than FloralWhite (naranja clarito) */
+
         .main-card {
             background-color: #FFFFFF;
             border: 1px solid #E5E7EB;
@@ -60,10 +64,18 @@
         .expandable-card .details {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
+            opacity: 0;
+            visibility: hidden;
+            padding-top: 0;
+            padding-bottom: 0;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, padding 0.5s ease-in-out;
         }
         .expandable-card.open .details {
             max-height: 500px; /* Adjust as needed for content length */
+            opacity: 1;
+            visibility: visible;
+            padding-top: 1rem; /* pt-4 */
+            padding-bottom: 1rem; /* pb-4 */
         }
         .expandable-card button .arrow {
             transition: transform 0.3s ease-in-out;
@@ -71,15 +83,53 @@
         .expandable-card.open button .arrow {
             transform: rotate(180deg);
         }
+        /* Style for calculator inputs */
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* Chrome, Safari, Edge */
+            margin: 0;
+        }
+
+        /* Rain effects */
+        .rain-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1; /* Ensure it's behind content */
+        }
+
+        .rain-item {
+            position: absolute;
+            opacity: 0; /* Start invisible */
+            animation: fall linear infinite;
+            white-space: nowrap; /* Prevent emoji from wrapping */
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } /* Added rotation for coins */
+        }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased bg-custom-blue-light">
+
+    <!-- Rain layer container -->
+    <div id="rain-layer" class="rain-layer"></div>
 
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <button id="homeButton" class="font-bold text-xl text-gray-800 focus:outline-none">Italoserch</button>
+                    <button id="homeButton" class="font-bold text-xl text-gray-800 focus:outline-none">Italosearch</button>
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
@@ -87,6 +137,8 @@
                         <button id="investigacionesNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Investigaciones</button>
                         <button id="wikiNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">WIKI</button>
                         <button id="principiosNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Principios</button>
+                        <button id="cryptoNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Bitcoin</button>
+                        <button id="herramientasNavLink" class="nav-link text-gray-600 px-3 py-2 rounded-md text-sm font-medium">Herramientas</button>
                     </div>
                 </div>
             </div>
@@ -96,9 +148,9 @@
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
 
         <!-- Home View -->
-        <section id="italoserch-home" class="view-section">
+        <section id="italosearch-home" class="view-section">
             <div class="text-center mb-16">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">Bienvenido a Italoserch</h1>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">Bienvenido a Italosearch</h1>
                 <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">Tu centro personal para la investigación y el análisis de inversiones.</p>
                 <p class="mt-2 text-md text-gray-500 max-w-xl mx-auto">Explora nuestras investigaciones, aprende sobre terminología clave y descubre principios fundamentales de inversión.</p>
             </div>
@@ -121,6 +173,16 @@
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">Principios de Inversión</h3>
                     <p class="text-gray-600">Descubre las filosofías que guían a los inversores más exitosos, como Warren Buffett.</p>
                     <button class="mt-4 inline-block bg-purple-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-purple-600 transition-colors">Ver Principios</button>
+                </div>
+                <div id="quick-link-crypto" class="main-card p-6 rounded-lg cursor-pointer text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Bitcoin</h3>
+                    <p class="text-gray-600">Explora la primera y más grande criptomoneda: Bitcoin.</p>
+                    <button class="mt-4 inline-block bg-yellow-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors">Explorar Bitcoin</button>
+                </div>
+                <div id="quick-link-herramientas" class="main-card p-6 rounded-lg cursor-pointer text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Herramientas</h3>
+                    <p class="text-gray-600">Calculadoras de inversión para ayudarte a planificar tu futuro financiero.</p>
+                    <button class="mt-4 inline-block bg-green-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-green-600 transition-colors">Ver Herramientas</button>
                 </div>
             </div>
         </section>
@@ -151,7 +213,7 @@
         <!-- Globant Analysis View -->
         <section id="globant-analysis-view" class="hidden view-section">
             <div class="flex justify-start mb-6">
-                <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                <button class="back-to-investigaciones bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                     </svg>
@@ -355,7 +417,7 @@
             <div class="flex justify-start mb-6">
                 <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1  1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                     </svg>
                     <span>Volver al Inicio</span>
                 </button>
@@ -366,47 +428,215 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                     <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Ratio P/E (Precio/Ganancias)
+                        Ratios de Rentabilidad
                         <span class="arrow text-xl transform transition-transform">▼</span>
                     </button>
                     <div class="details px-4 pb-4 text-gray-600">
-                        <p>El Ratio Precio/Ganancias (Price-to-Earnings, P/E) es una métrica de valoración que compara el precio actual de la acción de una empresa con sus ganancias por acción (EPS). Indica cuántas veces están los inversores dispuestos a pagar por cada dólar de ganancias. Un P/E alto puede sugerir que la acción está sobrevalorada o que se esperan grandes crecimientos futuros, mientras que un P/E bajo podría indicar subvaloración o expectativas de bajo crecimiento.</p>
+                        <p class="mb-2">Miden qué tan eficiente es la empresa generando ganancias con sus ventas, activos o capital.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Margen bruto:</h4>
+                        <p class="text-sm">`Margen Bruto = (Ventas – Coste de Ventas) / Ventas`</p>
+                        <p class="text-sm">Indica cuánto gana la empresa después de producir sus bienes/servicios. Ejemplo: si vende 100M y el coste de producción son 60M → margen bruto = 40%. Alta calidad si es estable o creciente.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Margen operativo (EBIT Margin):</h4>
+                        <p class="text-sm">`EBIT Margin = Beneficio Operativo (EBIT) / Ventas`</p>
+                        <p class="text-sm">Mide la rentabilidad de las operaciones principales, sin incluir impuestos ni deudas.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Margen neto:</h4>
+                        <p class="text-sm">`Margen Neto = Beneficio Neto / Ventas`</p>
+                        <p class="text-sm">Es lo que realmente queda en el bolsillo. Importante compararlo con competidores.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">ROE (Return on Equity):</h4>
+                        <p class="text-sm">`ROE = Beneficio Neto / Patrimonio Neto`</p>
+                        <p class="text-sm">Cuánto gana la empresa por cada € de capital de accionistas. Ejemplo: ROE del 15% = 0,15 € de beneficio por cada € invertido.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">ROA (Return on Assets):</h4>
+                        <p class="text-sm">`ROA = Beneficio Neto / Activos Totales`</p>
+                        <p class="text-sm">Cuánto rinde cada activo de la empresa.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">ROIC (Return on Invested Capital):</h4>
+                        <p class="text-sm">`ROIC = (EBIT – Impuestos) / Capital Invertido`</p>
+                        <p class="text-sm">Mide si la empresa crea valor respecto al coste de capital. Es uno de los más seguidos por inversores profesionales.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">ROCE (Return on Capital Employed):</h4>
+                        <p class="text-sm">`ROCE = EBIT / Capital Empleado (Activos Totales – Pasivos Corrientes)`</p>
+                        <p class="text-sm">Mide cuánta rentabilidad genera respecto al capital total que emplea. Bueno para comparar empresas con diferentes niveles de deuda.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Crecimiento de EPS (Earnings Per Share Growth):</h4>
+                        <p class="text-sm">Tasa de crecimiento del beneficio por acción en varios años. Ejemplo: EPS 2020 = $2, EPS 2023 = $4 → crecimiento anual = 26%. Una empresa consistente en EPS creciente suele atraer inversores a largo plazo.</p>
                     </div>
                 </div>
                 <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                     <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        EPS (Ganancias por Acción)
+                        Ratios de Liquidez
                         <span class="arrow text-xl transform transition-transform">▼</span>
                     </button>
                     <div class="details px-4 pb-4 text-gray-600">
-                        <p>Las Ganancias por Acción (Earnings Per Share, EPS) es la porción de las ganancias de una empresa asignada a cada acción ordinaria en circulación. Es un indicador clave de la rentabilidad de una empresa y se calcula dividiendo las ganancias netas entre el número de acciones en circulación. Un EPS creciente es generalmente positivo para los inversores.</p>
+                        <p class="mb-2">Miden la capacidad de la empresa para afrontar deudas a corto plazo.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Current Ratio (Razón corriente):</h4>
+                        <p class="text-sm">`Current Ratio = Activos Corrientes / Pasivos Corrientes`</p>
+                        <p class="text-sm">1 indica que puede pagar deudas de corto plazo sin problemas. Ejemplo: 1,5 = tiene 1,5 € en activos líquidos por cada € de deuda a corto plazo.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Quick Ratio (Test ácido):</h4>
+                        <p class="text-sm">`Quick Ratio = (Activos Corrientes – Inventarios) / Pasivos Corrientes`</p>
+                        <p class="text-sm">Más estricto porque descuenta inventarios (menos líquidos).</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Cash Ratio (Liquidez inmediata):</h4>
+                        <p class="text-sm">`Cash Ratio = (Caja + Equivalentes) / Pasivos Corrientes`</p>
+                        <p class="text-sm">Solo considera efectivo disponible. Muestra si podría pagar todas sus deudas de corto plazo inmediatamente.</p>
                     </div>
                 </div>
                 <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                     <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        DCF (Flujo de Caja Descontado)
+                        Ratios de Endeudamiento
                         <span class="arrow text-xl transform transition-transform">▼</span>
                     </button>
                     <div class="details px-4 pb-4 text-gray-600">
-                        <p>El Flujo de Caja Descontado (Discounted Cash Flow, DCF) es un método de valoración que se utiliza para estimar el valor de una inversión basándose en sus flujos de caja futuros esperados. Se descuentan esos flujos de caja futuros a su valor presente utilizando una tasa de descuento, para determinar el valor intrínseco de la empresa hoy. Es una herramienta poderosa para determinar si una inversión está subvalorada o sobrevalorada.</p>
+                        <p class="mb-2">Miden el riesgo financiero de la empresa y qué tan apalancada está.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Debt to Equity (Deuda/Patrimonio):</h4>
+                        <p class="text-sm">`D/E = Deuda Total / Patrimonio Neto`</p>
+                        <p class="text-sm">Si es muy alto, significa que la empresa depende mucho de deuda.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Debt to EBITDA:</h4>
+                        <p class="text-sm">`Debt/EBITDA = Deuda Total / EBITDA`</p>
+                        <p class="text-sm">Indica cuántos años de EBITDA necesita para pagar toda su deuda. Regla: <3 es sano, >5 es peligroso.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Cobertura de intereses (Interest Coverage):</h4>
+                        <p class="text-sm">`EBIT / Gastos Financieros`</p>
+                        <p class="text-sm">Cuántas veces puede pagar sus intereses con el beneficio operativo.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Net Debt / Equity (Deuda Neta sobre Patrimonio):</h4>
+                        <p class="text-sm">`Deuda Neta = Deuda Total – Caja`</p>
+                        <p class="text-sm">Si la empresa tiene mucha caja, la deuda real es menor.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Debt to Capital:</h4>
+                        <p class="text-sm">`Deuda Total / (Deuda Total + Patrimonio Neto)`</p>
+                        <p class="text-sm">Indica qué porcentaje del capital de la empresa está financiado con deuda.</p>
                     </div>
                 </div>
                 <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                     <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Foso Competitivo (Moat)
+                        Ratios de Eficiencia
                         <span class="arrow text-xl transform transition-transform">▼</span>
                     </button>
                     <div class="details px-4 pb-4 text-gray-600">
-                        <p>Un "Foso Competitivo" (Moat) se refiere a las ventajas sostenibles que tiene una empresa sobre sus competidores, lo que le permite proteger sus ganancias a largo plazo. Estos fosos pueden incluir activos intangibles (marcas fuertes, patentes), costes de cambio altos para los clientes, ventajas de coste, economías de escala o efectos de red. Warren Buffett popularizó este concepto.</p>
+                        <p class="mb-2">Miden qué tan bien usa sus activos para generar ingresos.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Rotación de activos:</h4>
+                        <p class="text-sm">`Ventas / Activos Totales`</p>
+                        <p class="text-sm">Qué tan productivos son los activos.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Rotación de inventario:</h4>
+                        <p class="text-sm">`Coste de Ventas / Inventario Promedio`</p>
+                        <p class="text-sm">Indica cuántas veces al año se vende y repone el inventario. Ejemplo: 6 = rota inventario cada 2 meses.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Rotación de cuentas por cobrar:</h4>
+                        <p class="text-sm">`Ventas a crédito / Cuentas por cobrar promedio`</p>
+                        <p class="text-sm">Indica cada cuánto cobra sus ventas. Un número bajo = tarda demasiado en cobrar → problemas de liquidez.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Rotación de cuentas por pagar:</h4>
+                        <p class="text-sm">`Compras a crédito / Cuentas por pagar promedio`</p>
+                        <p class="text-sm">Muestra cuánto tarda en pagar a proveedores. Demasiado bajo = paga muy rápido y pierde poder de negociación. Demasiado alto = riesgo de tensiones con proveedores.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Ciclo de conversión de efectivo (Cash Conversion Cycle, CCC):</h4>
+                        <p class="text-sm">`CCC = Días de Inventario + Días de Cobro – Días de Pago`</p>
+                        <p class="text-sm">Cuánto tiempo tarda en convertir su inversión en inventario a efectivo.</p>
                     </div>
                 </div>
                 <div class="expandable-card bg-white border border-gray-200 rounded-lg">
                     <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Margen de Seguridad
+                        Ratios de Valoración
                         <span class="arrow text-xl transform transition-transform">▼</span>
                     </button>
                     <div class="details px-4 pb-4 text-gray-600">
-                        <p>El "Margen de Seguridad" es un principio de inversión que implica comprar acciones cuando su precio de mercado está significativamente por debajo de su valor intrínseco estimado. Benjamin Graham, mentor de Warren Buffett, popularizó este concepto. Actúa como un amortiguador contra errores de juicio o eventos económicos adversos, protegiendo al inversor de pérdidas significativas.</p>
+                        <p class="mb-2">Sirven para saber si una acción está cara o barata comparada con su beneficio, ventas o valor contable.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">PER (Price to Earnings Ratio):</h4>
+                        <p class="text-sm">`PER = Precio de la Acción / Beneficio por Acción (EPS)`</p>
+                        <p class="text-sm">PER alto = expectativas de crecimiento. PER bajo = puede estar infravalorada (o en problemas).</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">PEG (Price/Earnings to Growth):</h4>
+                        <p class="text-sm">`PEG = PER / Crecimiento de Beneficios`</p>
+                        <p class="text-sm">Ajusta el PER al crecimiento esperado. PEG ≈ 1 = precio justo. PEG > 2 = caro.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">P/BV (Price to Book Value):</h4>
+                        <p class="text-sm">`P/BV = Precio de la Acción / Valor Contable por Acción`</p>
+                        <p class="text-sm">Indica cuánto paga el mercado por cada € de patrimonio neto.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">EV/EBITDA (Enterprise Value / EBITDA):</h4>
+                        <p class="text-sm">`EV/EBITDA = Valor Empresa / EBITDA`</p>
+                        <p class="text-sm">Ratio muy usado para comparar empresas de un mismo sector. EV = Capitalización bursátil + Deuda – Caja. EV/EBITDA bajo = puede estar infravalorada.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Dividend Yield:</h4>
+                        <p class="text-sm">`Dividend Yield = Dividendo por Acción / Precio de la Acción`</p>
+                        <p class="text-sm">Mide la rentabilidad que recibís en dividendos.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">EV/EBIT (Enterprise Value / EBIT):</h4>
+                        <p class="text-sm">Similar al EV/EBITDA pero más conservador porque incluye depreciaciones y amortizaciones.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">P/S (Price to Sales):</h4>
+                        <p class="text-sm">`P/S = Precio de la acción / Ventas por acción`</p>
+                        <p class="text-sm">Útil para empresas que todavía no son rentables. Ejemplo: startups tecnológicas.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">P/FCF (Price to Free Cash Flow):</h4>
+                        <p class="text-sm">`P/FCF = Capitalización de mercado / Flujo de Caja Libre`</p>
+                        <p class="text-sm">Más realista que el PER, porque mide el dinero efectivo que genera la empresa.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Ratios de Crecimiento
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">CAGR (Tasa de Crecimiento Anual Compuesta):</h4>
+                        <p class="text-sm">`CAGR = (Valor Final / Valor Inicial)^(1/n) - 1` donde n = número de años.</p>
+                        <p class="text-sm">Mide el crecimiento medio anual de ingresos, beneficios o dividendos.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Sustainable Growth Rate (SGR):</h4>
+                        <p class="text-sm">`SGR = ROE × (1 - Payout Ratio)`</p>
+                        <p class="text-sm">Tasa máxima a la que puede crecer una empresa sin emitir nueva deuda o acciones.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Ratios por Sector
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p class="mb-2">Algunos sectores requieren mirar indicadores específicos:</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Bancos / Financieras:</h4>
+                        <p class="text-sm">**CET1 Ratio:** mide solvencia del banco.</p>
+                        <p class="text-sm">**NIM (Net Interest Margin):** diferencia entre intereses cobrados y pagados.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Retail / Consumo:</h4>
+                        <p class="text-sm">**Ventas mismas tiendas (Same Store Sales).**</p>
+                        <p class="text-sm">**Inventario / Ventas.**</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Tecnología:</h4>
+                        <p class="text-sm">**Crecimiento de usuarios activos.**</p>
+                        <p class="text-sm">**R&D / Ventas** (inversión en innovación).</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Energía / Commodities:</h4>
+                        <p class="text-sm">**Coste de extracción (Break-even).**</p>
+                        <p class="text-sm">**Producción diaria** (barriles, toneladas).</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Señales de Alerta (Red Flags)
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p class="mb-2">Más allá de ratios, hay alertas que saltan a la vista en estados financieros:</p>
+                        <p class="text-sm">**Deuda creciente** sin aumento de ingresos.</p>
+                        <p class="text-sm">**Margen neto decreciente** año tras año.</p>
+                        <p class="text-sm">**Flujo de caja negativo crónico** (aunque los beneficios contables parezcan buenos).</p>
+                        <p class="text-sm">Altas **recompras de acciones financiadas con deuda**.</p>
+                        <p class="text-sm">**Cambios constantes en la dirección** / auditorías con salvedades.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Resumen Práctico: “Radar de Inversión”
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p class="mb-2">Cuando evalúes una empresa, podés seguir esta checklist:</p>
+                        <p class="text-sm">✅ **Rentabilidad:** ROE > 10%, márgenes estables.</p>
+                        <p class="text-sm">✅ **Solidez:** Deuda/EBITDA < 3, Current ratio > 1.</p>
+                        <p class="text-sm">✅ **Valoración:** PER razonable respecto al sector, EV/EBITDA competitivo.</p>
+                        <p class="text-sm">✅ **Crecimiento:** CAGR de ingresos y EPS positivo.</p>
+                        <p class="text-sm">✅ **Caja:** Flujo de caja libre positivo y creciente.</p>
+                        <p class="text-sm">✅ **Sector:** Entender qué ratios pesan más en ese sector.</p>
+                    </div>
+                </div>
+                <!-- Old WIKI entries (grouped for organization) -->
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Términos Anteriores: P/E, EPS, DCF, Moat, Margen de Seguridad
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Ratio P/E (Precio/Ganancias):</h4>
+                        <p class="text-sm">El Ratio Precio/Ganancias (Price-to-Earnings, P/E) es una métrica de valoración que compara el precio actual de la acción de una empresa con sus ganancias por acción (EPS). Indica cuántas veces están los inversores dispuestos a pagar por cada dólar de ganancias. Un P/E alto puede sugerir que la acción está sobrevalorada o que se esperan grandes crecimientos futuros, mientras que un P/E bajo podría indicar subvaloración o expectativas de bajo crecimiento.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">EPS (Ganancias por Acción):</h4>
+                        <p class="text-sm">Las Ganancias por Acción (Earnings Per Share, EPS) es la porción de las ganancias de una empresa asignada a cada acción ordinaria en circulación. Es un indicador clave de la rentabilidad de una empresa y se calcula dividiendo las ganancias netas entre el número de acciones en circulación. Un EPS creciente es generalmente positivo para los inversores.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">DCF (Flujo de Caja Descontado):</h4>
+                        <p class="text-sm">El Flujo de Caja Descontado (Discounted Cash Flow, DCF) es un método de valoración que se utiliza para estimar el valor de una inversión basándose en sus flujos de caja futuros esperados. Se descuentan esos flujos de caja futuros a su valor presente utilizando una tasa de descuento, para determinar el valor intrínseco de la empresa hoy. Es una herramienta poderosa para determinar si una inversión está subvalorada o sobrevalorada.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Foso Competitivo (Moat):</h4>
+                        <p class="text-sm">Un "Foso Competitivo" (Moat) se refiere a las ventajas sostenibles que tiene una empresa sobre sus competidores, lo que le permite proteger sus ganancias a largo plazo. Estos fosos pueden incluir activos intangibles (marcas fuertes, patentes), costes de cambio altos para los clientes, ventajas de coste, economías de escala o efectos de red. Warren Buffett popularizó este concepto.</p>
+                        <h4 class="font-semibold text-gray-700 mt-3 mb-1">Margen de Seguridad:</h4>
+                        <p class="text-sm">El "Margen de Seguridad" es un principio de inversión que implica comprar acciones cuando su precio de mercado está significativamente por debajo de su valor intrínseco estimado. Benjamin Graham, mentor de Warren Buffett, popularizó este concepto. Actúa como un amortiguador contra errores de juicio o eventos económicos adversos, protegiendo al inversor de pérdidas significativas.</p>
                     </div>
                 </div>
             </div>
@@ -449,49 +679,237 @@
             </div>
         </section>
 
+        <!-- Bitcoin Section -->
+        <section id="crypto-section" class="hidden view-section">
+            <div class="flex justify-start mb-6">
+                <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Volver al Inicio</span>
+                </button>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Bitcoin</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Explora las características fundamentales y los beneficios de Bitcoin, el activo digital más importante.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Descentralización
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>Bitcoin opera en una red peer-to-peer sin una autoridad central. Esto significa que ninguna entidad (gobierno, banco o corporación) tiene control sobre Bitcoin, lo que la hace resistente a la censura y la manipulación. Las transacciones son verificadas por la red de participantes (nodos) y registradas en un libro contable público llamado blockchain.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Seguridad y Criptografía
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>Las transacciones de Bitcoin están protegidas por criptografía avanzada. Cada transacción se encadena a la anterior en la blockchain, haciendo que sea extremadamente difícil y costoso alterar registros pasados. Este diseño criptográfico asegura la integridad y la autenticidad de la red, protegiendo a los usuarios de fraudes y dobles gastos.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Oferta Limitada (Escasez)
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>La cantidad total de Bitcoins que pueden existir está limitada a 21 millones de unidades. Esta escasez programada lo hace deflacionario por naturaleza, a diferencia de las monedas fiduciarias que pueden imprimirse indefinidamente. Esta característica es clave para su propuesta de valor como "oro digital" y un activo de reserva de valor.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Accesibilidad y Transacciones 24/7
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>Cualquier persona con una conexión a Internet puede acceder a Bitcoin, independientemente de su ubicación geográfica o estatus bancario. Las transacciones se pueden realizar en cualquier momento del día, cualquier día de la semana, sin necesidad de intermediarios, lo que lo hace ideal para pagos internacionales o para aquellos sin acceso a servicios bancarios tradicionales.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Resistencia a la Censura
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>Debido a su naturaleza descentralizada, las transacciones de Bitcoin son difíciles de censurar o bloquear por parte de gobiernos o instituciones. Una vez que una transacción se incluye en la blockchain, es irreversible y no puede ser deshecha por terceros, lo que proporciona una mayor libertad financiera para los usuarios.</p>
+                    </div>
+                </div>
+                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
+                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                        Potencial de Revalorización y Almacén de Valor
+                        <span class="arrow text-xl transform transition-transform">▼</span>
+                    </button>
+                    <div class="details px-4 pb-4 text-gray-600">
+                        <p>Históricamente, Bitcoin ha demostrado un alto potencial de revalorización a largo plazo, atrayendo a inversores que lo ven como un almacén de valor o "oro digital". Su diseño resistente a la inflación y su adopción creciente como activo financiero lo posicionan como una alternativa a los activos tradicionales en carteras de inversión diversificadas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Herramientas Section -->
+        <section id="herramientas-section" class="hidden view-section">
+            <div class="flex justify-start mb-6">
+                <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Volver al Inicio</span>
+                </button>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Herramientas de Inversión</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Calculadoras interactivas para simular y planificar tus inversiones.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Bitcoin DCA Calculator -->
+                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Calculadora DCA de Bitcoin (Simulación)</h3>
+                    <p class="text-sm text-gray-500 mb-4 text-center">Simula el crecimiento de una inversión mensual en Bitcoin. *El precio histórico es una aproximación para fines ilustrativos.*</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="btcMonthlyAmount" class="block text-sm font-medium text-gray-700">Inversión Mensual ($):</label>
+                            <input type="number" id="btcMonthlyAmount" value="100" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                        </div>
+                        <div>
+                            <label for="btcStartYear" class="block text-sm font-medium text-gray-700">Año de Inicio (desde 2010):</label>
+                            <input type="number" id="btcStartYear" value="2015" min="2010" max="2023" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                        </div>
+                        <button id="calculateBtcDCA" class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-yellow-600 transition-colors">Calcular Inversión</button>
+                    </div>
+                    <div class="mt-6">
+                        <p class="text-center text-lg font-semibold text-gray-800">Valor Final Estimado: <span id="btcResult" class="text-green-600">$0.00</span></p>
+                        <div class="chart-container mt-4">
+                            <canvas id="btcChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compound Interest Calculator -->
+                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Calculadora de Interés Compuesto</h3>
+                    <p class="text-sm text-gray-500 mb-4 text-center">Calcula el crecimiento de tu dinero con depósitos regulares.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="initialAmount" class="block text-sm font-medium text-gray-700">Monto Inicial ($):</label>
+                            <input type="number" id="initialAmount" value="1000" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                        </div>
+                        <div>
+                            <label for="monthlyDeposit" class="block text-sm font-medium text-gray-700">Depósito Mensual ($):</label>
+                            <input type="number" id="monthlyDeposit" value="50" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                        </div>
+                        <div>
+                            <label for="annualInterestRate" class="block text-sm font-medium text-gray-700">Tasa de Interés Anual (%):</label>
+                            <input type="number" id="annualInterestRate" value="7" min="0" max="100" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                        </div>
+                        <div>
+                            <label for="investmentYears" class="block text-sm font-medium text-gray-700">Años de Inversión:</label>
+                            <input type="number" id="investmentYears" value="10" min="1" max="50" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                        </div>
+                        <button id="calculateCompoundInterest" class="w-full bg-green-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-600 transition-colors">Calcular Interés Compuesto</button>
+                    </div>
+                    <div class="mt-6">
+                        <p class="text-center text-lg font-semibold text-gray-800">Valor Final Estimado: <span id="compoundResult" class="text-green-600">$0.00</span></p>
+                        <div class="chart-container mt-4">
+                            <canvas id="compoundChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="bg-gray-800 text-white mt-16">
         <div class="container mx-auto px-8 py-4 text-center text-sm">
-            <p>&copy; 2025 Italoserch. Todos los derechos reservados.</p>
+            <p>&copy; 2025 Italosearch. Todos los derechos reservados.</p>
         </div>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get all view sections
-            const homeSection = document.getElementById('italoserch-home');
+            const homeSection = document.getElementById('italosearch-home');
             const investigacionesSection = document.getElementById('investigaciones-section');
             const globantAnalysisView = document.getElementById('globant-analysis-view');
             const wikiSection = document.getElementById('wiki-section');
             const principiosSection = document.getElementById('principios-section');
+            const cryptoSection = document.getElementById('crypto-section');
+            const herramientasSection = document.getElementById('herramientas-section');
 
             // Navigation buttons
-            const homeButton = document.getElementById('homeButton'); // Italoserch brand button
+            const homeButton = document.getElementById('homeButton');
             const homeNavLink = document.getElementById('homeNavLink');
             const investigacionesNavLink = document.getElementById('investigacionesNavLink');
             const wikiNavLink = document.getElementById('wikiNavLink');
             const principiosNavLink = document.getElementById('principiosNavLink');
+            const cryptoNavLink = document.getElementById('cryptoNavLink');
+            const herramientasNavLink = document.getElementById('herramientasNavLink');
 
             // Quick links from home page
             const quickLinkInvestigaciones = document.getElementById('quick-link-investigaciones');
             const quickLinkWiki = document.getElementById('quick-link-wiki');
             const quickLinkPrincipios = document.getElementById('quick-link-principios');
+            const quickLinkCrypto = document.getElementById('quick-link-crypto');
+            const quickLinkHerramientas = document.getElementById('quick-link-herramientas');
 
             // Card specific buttons
             const globantCard = document.getElementById('globant-card');
 
             // Back to home buttons (common for all sub-sections)
             const backToHomeBtns = document.querySelectorAll('.back-to-home');
+            const backToInvestigacionesBtn = document.querySelector('.back-to-investigaciones');
 
-            // Function to show a specific section and hide others
+            const rainLayer = document.getElementById('rain-layer');
+
+            // Function to show a specific section, hide others, change background and manage rain
             function showSection(sectionToShow) {
-                [homeSection, investigacionesSection, globantAnalysisView, wikiSection, principiosSection].forEach(section => {
+                [homeSection, investigacionesSection, globantAnalysisView, wikiSection, principiosSection, cryptoSection, herramientasSection].forEach(section => {
                     section.classList.add('hidden');
                 });
                 sectionToShow.classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
+
+                // Remove existing background classes
+                document.body.classList.remove('bg-custom-blue-light', 'bg-custom-orange-light');
+                
+                // Clear existing rain items
+                rainLayer.innerHTML = '';
+
+                // Apply new background color and rain effect
+                if (sectionToShow.id === 'crypto-section') {
+                    document.body.classList.add('bg-custom-orange-light');
+                    createRainEffect('🪙', 25, '20s', '4s'); // Bitcoin coins
+                } else {
+                    document.body.classList.add('bg-custom-blue-light');
+                    // No rain effect for other sections
+                }
+
+                // Special handling for Globant Analysis View to re-initialize charts
+                if (sectionToShow.id === 'globant-analysis-view') {
+                    initializeGlobantCharts();
+                }
             }
+
+            // Function to create and animate rain items
+            function createRainEffect(emoji, count, animationDuration, animationDelaySpread) {
+                for (let i = 0; i < count; i++) {
+                    const rainItem = document.createElement('span');
+                    rainItem.classList.add('rain-item');
+                    rainItem.textContent = emoji;
+                    
+                    const size = Math.random() * (24 - 10) + 10; // Random size between 10px and 24px
+                    rainItem.style.fontSize = `${size}px`;
+                    rainItem.style.left = `${Math.random() * 100}vw`; // Random horizontal position
+                    rainItem.style.animationDuration = `${parseFloat(animationDuration) + (Math.random() * 5 - 2.5)}s`; // Slight variation
+                    rainItem.style.animationDelay = `${Math.random() * parseFloat(animationDelaySpread) * -1}s`; // Staggered start
+                    
+                    rainLayer.appendChild(rainItem);
+                }
+            }
+
 
             // Event Listeners for main navigation
             homeButton.addEventListener('click', () => showSection(homeSection));
@@ -499,6 +917,8 @@
             investigacionesNavLink.addEventListener('click', () => showSection(investigacionesSection));
             wikiNavLink.addEventListener('click', () => showSection(wikiSection));
             principiosNavLink.addEventListener('click', () => showSection(principiosSection));
+            cryptoNavLink.addEventListener('click', () => showSection(cryptoSection));
+            herramientasNavLink.addEventListener('click', () => showSection(herramientasSection));
 
             // Event Listeners for quick links from home
             if (quickLinkInvestigaciones) {
@@ -510,6 +930,12 @@
             if (quickLinkPrincipios) {
                 quickLinkPrincipios.addEventListener('click', () => showSection(principiosSection));
             }
+            if (quickLinkCrypto) {
+                quickLinkCrypto.addEventListener('click', () => showSection(cryptoSection));
+            }
+            if (quickLinkHerramientas) {
+                quickLinkHerramientas.addEventListener('click', () => showSection(herramientasSection));
+            }
 
             // Event listener for Globant card (from Investigaciones section)
             if (globantCard) {
@@ -519,30 +945,20 @@
                 });
             }
 
-            // Event listeners for "Volver al Inicio" buttons
+            // Event listeners for "Volver al Inicio" / "Volver a Investigaciones" buttons
             backToHomeBtns.forEach(button => {
                 button.addEventListener('click', () => {
-                    // Check if the current view is Globant Analysis, then go to Investigaciones instead of Home
-                    if (!globantAnalysisView.classList.contains('hidden')) {
-                         showSection(investigacionesSection);
-                         // Change button text if we are in Globant section and going back to Investigaciones
-                         button.querySelector('span').textContent = 'Volver a Investigaciones';
-                    } else {
-                        showSection(homeSection);
-                        // Reset button text for other back buttons
-                        button.querySelector('span').textContent = 'Volver al Inicio';
-                    }
+                    showSection(homeSection);
                 });
             });
 
-            // Specific logic for Globant Analysis back button (from Globant to Investigaciones)
-            const globantBackBtn = globantAnalysisView.querySelector('.back-to-home');
-            if (globantBackBtn) {
-                globantBackBtn.addEventListener('click', (event) => {
+            if (backToInvestigacionesBtn) {
+                backToInvestigacionesBtn.addEventListener('click', (event) => {
                     event.preventDefault(); // Prevent default back-to-home behavior
                     showSection(investigacionesSection);
                 });
             }
+
 
             // Globant specific data and chart initialization logic (reused from previous turn)
             const reportData = {
@@ -800,8 +1216,195 @@
                 });
             });
 
-            // Initial view
-            showSection(homeSection);
+            // --- Bitcoin DCA Calculator Logic ---
+            const btcMonthlyAmountInput = document.getElementById('btcMonthlyAmount');
+            const btcStartYearInput = document.getElementById('btcStartYear');
+            const calculateBtcDCAButton = document.getElementById('calculateBtcDCA');
+            const btcResultSpan = document.getElementById('btcResult');
+            const btcChartCanvas = document.getElementById('btcChart');
+            let btcChartInstance = null;
+
+            // Simplified historical Bitcoin price approximations (not real data, for illustration only)
+            const btcHistoricalPrices = {
+                2010: 0.1, 2011: 1, 2012: 10, 2013: 100, 2014: 400, 2015: 300, 2016: 600, 2017: 15000, 2018: 3500,
+                2019: 7000, 2020: 20000, 2021: 50000, 2022: 25000, 2023: 35000, 2024: 50000, 2025: 70000 // Hypothetical future
+            };
+
+            function calculateBtcDCA() {
+                const monthlyAmount = parseFloat(btcMonthlyAmountInput.value);
+                const startYear = parseInt(btcStartYearInput.value);
+                const currentYear = new Date().getFullYear();
+
+                if (isNaN(monthlyAmount) || monthlyAmount <= 0 || isNaN(startYear) || startYear < 2010 || startYear > currentYear) {
+                    btcResultSpan.textContent = "Ingrese valores válidos.";
+                    if (btcChartInstance) btcChartInstance.destroy();
+                    return;
+                }
+
+                let totalInvested = 0;
+                let totalBitcoin = 0;
+                const chartLabels = [];
+                const chartData = [];
+
+                for (let year = startYear; year <= currentYear; year++) {
+                    const pricePerBtc = btcHistoricalPrices[year] || btcHistoricalPrices[currentYear]; // Use current year's price if year not in historical data
+                    
+                    // For simplification, assume monthly purchase at average annual price
+                    for (let month = 0; month < 12; month++) {
+                        totalInvested += monthlyAmount;
+                        totalBitcoin += monthlyAmount / pricePerBtc;
+                    }
+                    chartLabels.push(year.toString());
+                    chartData.push(totalBitcoin * pricePerBtc); // Value of holdings at year end
+                }
+
+                const finalValue = totalBitcoin * btcHistoricalPrices[currentYear]; // Value at today's hypothetical price
+                btcResultSpan.textContent = `$${finalValue.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                // Update BTC Chart
+                if (btcChartInstance) btcChartInstance.destroy();
+                btcChartInstance = new Chart(btcChartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Valor de Inversión DCA en Bitcoin ($)',
+                            data: chartData,
+                            borderColor: 'rgba(245, 166, 35, 0.8)',
+                            backgroundColor: 'rgba(245, 166, 35, 0.2)',
+                            fill: true,
+                            tension: 0.2
+                        }]
+                    },
+                    options: {
+                        ...commonChartOptions,
+                        scales: {
+                            x: {
+                                ...commonChartOptions.scales.x,
+                                title: { display: true, text: 'Año' }
+                            },
+                            y: {
+                                ...commonChartOptions.scales.y,
+                                title: { display: true, text: 'Valor ($)' },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString('es-ES');
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            ...commonChartOptions.plugins,
+                            tooltip: {
+                                ...commonChartOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': $' + context.parsed.y.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            calculateBtcDCAButton.addEventListener('click', calculateBtcDCA);
+
+            // --- Compound Interest Calculator Logic ---
+            const initialAmountInput = document.getElementById('initialAmount');
+            const monthlyDepositInput = document.getElementById('monthlyDeposit');
+            const annualInterestRateInput = document.getElementById('annualInterestRate');
+            const investmentYearsInput = document.getElementById('investmentYears');
+            const calculateCompoundInterestButton = document.getElementById('calculateCompoundInterest');
+            const compoundResultSpan = document.getElementById('compoundResult');
+            const compoundChartCanvas = document.getElementById('compoundChart');
+            let compoundChartInstance = null;
+
+            function calculateCompoundInterest() {
+                let principal = parseFloat(initialAmountInput.value);
+                const monthlyDeposit = parseFloat(monthlyDepositInput.value);
+                const annualRate = parseFloat(annualInterestRateInput.value) / 100;
+                const years = parseInt(investmentYearsInput.value);
+
+                if (isNaN(principal) || isNaN(monthlyDeposit) || isNaN(annualRate) || isNaN(years) || years < 1) {
+                    compoundResultSpan.textContent = "Ingrese valores válidos.";
+                    if (compoundChartInstance) compoundChartInstance.destroy();
+                    return;
+                }
+
+                const monthlyRate = annualRate / 12;
+                const totalMonths = years * 12;
+
+                const chartLabels = [];
+                const chartData = [];
+                let currentBalance = principal;
+
+                chartLabels.push('Año 0');
+                chartData.push(principal);
+
+                for (let year = 1; year <= years; year++) {
+                    for (let month = 0; month < 12; month++) {
+                        currentBalance += monthlyDeposit;
+                        currentBalance *= (1 + monthlyRate);
+                    }
+                    chartLabels.push(`Año ${year}`);
+                    chartData.push(currentBalance);
+                }
+
+                compoundResultSpan.textContent = `$${currentBalance.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                // Update Compound Interest Chart
+                if (compoundChartInstance) compoundChartInstance.destroy();
+                compoundChartInstance = new Chart(compoundChartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Valor Total ($)',
+                            data: chartData,
+                            borderColor: 'rgba(77, 182, 172, 0.8)',
+                            backgroundColor: 'rgba(77, 182, 172, 0.2)',
+                            fill: true,
+                            tension: 0.2
+                        }]
+                    },
+                    options: {
+                        ...commonChartOptions,
+                        scales: {
+                            x: {
+                                ...commonChartOptions.scales.x,
+                                title: { display: true, text: 'Año' }
+                            },
+                            y: {
+                                ...commonChartOptions.scales.y,
+                                title: { display: true, text: 'Valor ($)' },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString('es-ES');
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            ...commonChartOptions.plugins,
+                            tooltip: {
+                                ...commonChartOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': $' + context.parsed.y.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            calculateCompoundInterestButton.addEventListener('click', calculateCompoundInterest);
+
+
+            // Initial view and chart calculations
+            showSection(homeSection); // Ensure home is shown with its background and rain effect
+            calculateBtcDCA();
+            calculateCompoundInterest();
         });
     </script>
 </body>
