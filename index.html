@@ -9,8 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for the crown icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Chosen Palette: Warm Neutrals with subtle accents -->
-    <!-- Application Structure Plan: A single-page application serving as a comprehensive investment hub. The header navigation now includes "Inicio", "Investigaciones", "WIKI", "Principios", "Bitcoin", and "Herramientas". Each navigation item dynamically reveals its corresponding content section. The "Herramientas" section contains two distinct financial calculators (Bitcoin DCA and Compound Interest). Background colors change based on the active section (light orange for Bitcoin, light blue for others). A dynamic raining effect of Bitcoin coins is present only on the Bitcoin section. This structure provides intuitive navigation, clear segregation of content types, and extensible for future additions. -->
+    <!-- Application Structure Plan: A single-page application serving as a comprehensive investment hub. The header navigation now includes "Inicio", "Investigaciones", "WIKI", "Principios", "Bitcoin", and "Herramientas". Each navigation item dynamically reveals its corresponding content section. The "Herramientas" section contains two distinct financial calculators (Bitcoin DCA and Compound Interest). Background colors change based on the active section (light orange for Bitcoin, light blue for others). A dynamic raining effect of Bitcoin coins is present only on the Bitcoin section. A new section for the Bitcoin White Paper explanation is added, accessible via a button on the Bitcoin page. This structure provides intuitive navigation, clear segregation of content types, and extensible for future additions. -->
     <!-- Visualization & Content Choices: Expandable Cards (Wiki, Crypto, Risks/Opps) -> Goal: Inform/Organize -> Clickable cards with hidden details -> Enhanced readability, prevents information overload. Bitcoin DCA Calculator -> Goal: Simulate/Educate -> Interactive inputs, Chart.js line chart -> Visualizes potential growth, user-driven exploration. Compound Interest Calculator -> Goal: Calculate/Educate -> Interactive inputs, Chart.js line chart -> Demonstrates power of compounding, user-driven exploration. Dynamic background colors and Bitcoin coin rain effect -> Goal: Aesthetic/Thematic for Bitcoin section, clean for others. All charts are responsive and use Canvas. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -118,6 +120,85 @@
             90% { opacity: 1; }
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } /* Added rotation for coins */
         }
+
+        /* Custom style for Bitcoin White Paper button */
+        .bitcoin-whitepaper-button {
+            background: linear-gradient(to bottom, #FFD700, #DAA520); /* Golden gradient */
+            color: #4A2B00; /* Dark brown for text */
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px; /* Rounded-full */
+            font-weight: 600; /* Semibold */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 215, 0, 0.5); /* Lighter border */
+            position: relative; /* For crown positioning */
+        }
+        .bitcoin-whitepaper-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background: linear-gradient(to top, #FFD700, #DAA520); /* Reverse gradient on hover */
+        }
+        .bitcoin-whitepaper-button .fa-crown {
+            position: absolute;
+            top: -10px; /* Adjust as needed */
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FFD700; /* Golden color for crown */
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Styling for the White Paper Index */
+        .whitepaper-index {
+            background-color: #f9fafb; /* Light gray background */
+            padding: 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .whitepaper-index h3 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+            color: #383838;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .whitepaper-index ul {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr; /* Single column on small screens */
+            gap: 0.75rem; /* gap-3 */
+        }
+
+        @media (min-width: 768px) {
+            .whitepaper-index ul {
+                grid-template-columns: repeat(2, 1fr); /* Two columns on medium screens and up */
+            }
+        }
+
+        .whitepaper-index li a {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            background-color: #ffffff; /* White background for links */
+            border: 1px solid #e5e7eb;
+            color: #4a90e2; /* Blue text for links */
+            font-weight: 500; /* font-medium */
+            transition: background-color 0.2s, color 0.2s, transform 0.1s;
+        }
+
+        .whitepaper-index li a:hover {
+            background-color: #eff6ff; /* Light blue on hover */
+            color: #2c5282; /* Darker blue on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
 <body class="antialiased bg-custom-blue-light">
@@ -222,7 +303,7 @@
             </div>
 
             <!-- Content of Globant Investment Dashboard SPA starts here -->
-            <section id="hero-globant" class="text-center mb-16">
+            <section class="text-center mb-16">
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">Análisis Interactivo de Inversión: Globant</h1>
                 <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">¿Una oportunidad subvalorada por la IA o una trampa de valor en un mercado incierto?</p>
                 <div class="mt-8 inline-block bg-blue-100 text-blue-800 text-lg font-semibold px-6 py-3 rounded-full">
@@ -230,7 +311,7 @@
                 </div>
             </section>
 
-            <section id="summary" class="mb-16">
+            <section class="mb-16">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Resumen Clave</h2>
                 <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Esta sección ofrece una vista rápida de los indicadores más importantes. Aquí puedes ver el estado actual de la acción, su valoración según analistas y modelos, y de dónde provienen sus ingresos, dándote una base sólida para el análisis más profundo.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -280,7 +361,7 @@
                 </div>
             </section>
 
-            <section id="financials" class="mb-16">
+            <section class="mb-16">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Desempeño Financiero</h2>
                 <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Analiza la trayectoria financiera de Globant. El gráfico interactivo muestra la evolución de los ingresos y beneficios, permitiéndote identificar la tendencia de crecimiento histórico y la reciente desaceleración. Las métricas de salud financiera complementan esta visión.</p>
                 <div class="bg-white p-6 rounded-lg border border-gray-200">
@@ -303,7 +384,7 @@
                 </div>
             </section>
 
-            <section id="valuation" class="mb-16">
+            <section class="mb-16">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Análisis de Valoración</h2>
                 <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">¿Está la acción cara o barata? Esta sección compara la valoración de Globant con la de sus competidores y la industria. Los gráficos te ayudarán a entender si el precio actual es justo en relación con sus ventas y beneficios, ofreciendo un contexto crucial para tu decisión.</p>
                 <div class="bg-white p-6 rounded-lg border border-gray-200">
@@ -319,7 +400,7 @@
                 </div>
             </section>
 
-            <section id="risks-opps" class="mb-16">
+            <section class="mb-16">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Riesgos y Oportunidades</h2>
                 <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Toda inversión tiene dos caras. Aquí puedes explorar de forma interactiva los factores que podrían impulsar el crecimiento de Globant y los riesgos que podrían frenarlo. Haz clic en cada tarjeta para desplegar los detalles y obtener una visión equilibrada del panorama.</p>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -394,7 +475,7 @@
                 </div>
             </section>
 
-            <section id="conclusion" class="text-center bg-white p-8 rounded-lg border border-gray-200">
+            <section class="text-center bg-white p-8 rounded-lg border border-gray-200">
                 <h2 class="text-3xl font-bold text-gray-800 mb-4">Conclusión: ¿Es un Buen Momento para Invertir?</h2>
                 <div class="max-w-4xl mx-auto text-left grid md:grid-cols-2 gap-8">
                     <div class="p-6 bg-green-50 rounded-lg border border-green-200">
@@ -642,7 +723,7 @@
             </div>
         </section>
 
-        <!-- Principios de Inversión Section -->
+        <!-- Principios Section - New section -->
         <section id="principios-section" class="hidden view-section">
             <div class="flex justify-start mb-6">
                 <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
@@ -652,34 +733,40 @@
                     <span>Volver al Inicio</span>
                 </button>
             </div>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Principios Clave de Inversión</h2>
-            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Filosofías probadas para analizar empresas y tomar decisiones de inversión inteligentes, inspiradas en grandes inversores como Warren Buffett.</p>
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8 text-center">Principios de Inversión</h2>
+            <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto text-center mb-8">
+                Descubre las filosofías atemporales que guían a los inversores más exitosos del mundo, como Warren Buffett, Benjamin Graham y Charlie Munger.
+            </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-3">1. Invierte en lo que Entiendes</h3>
-                    <p class="text-gray-600">No inviertas en un negocio si no puedes explicar cómo funciona o por qué tiene una ventaja competitiva duradera. La complejidad es el enemigo de la buena inversión.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Inversión en Valor</h3>
+                    <p class="text-gray-600">Comprar activos por menos de su valor intrínseco. Busca empresas sólidas con precios deprimidos por factores temporales.</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-3">2. Calidad sobre Cantidad</h3>
-                    <p class="text-gray-600">Es mejor poseer un pequeño número de empresas excelentes que un gran número de empresas mediocres. Busca negocios con "fosos competitivos" sólidos que protejan sus ganancias.</p>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Pensamiento a Largo Plazo</h3>
+                    <p class="text-gray-600">Evitar las fluctuaciones del mercado a corto plazo y centrarse en el crecimiento compuesto a lo largo de décadas.</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-3">3. Pensamiento a Largo Plazo</h3>
-                    <p class="text-gray-600">Considera la empresa como un negocio completo, no solo como una acción con un precio volátil. Enfócate en su desempeño a largo plazo, no en las fluctuaciones diarias del mercado.</p>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Círculo de Competencia</h3>
+                    <p class="text-gray-600">Invertir solo en empresas y negocios que entiendes profundamente. No te aventures fuera de tu área de conocimiento.</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-3">4. Margen de Seguridad</h3>
-                    <p class="text-gray-600">Compra acciones solo cuando su precio de mercado sea significativamente inferior a su valor intrínseco. Esto te protege de posibles errores de cálculo y de las caídas inesperadas del mercado.</p>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Margen de Seguridad</h3>
+                    <p class="text-gray-600">Comprar una acción a un precio significativamente inferior a su valor real para protegerte de errores de cálculo o eventos imprevistos.</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-3">5. La Paciencia es una Virtud</h3>
-                    <p class="text-gray-600">Una vez que has invertido en una gran empresa a un precio justo, la paciencia es clave. Deja que el interés compuesto haga su magia y evita la tentación de reaccionar a cada noticia o movimiento del mercado.</p>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Foso Económico (Moat)</h3>
+                    <p class="text-gray-600">Identificar empresas con ventajas competitivas duraderas que protejan sus ganancias de la competencia.</p>
+                </div>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Ser Contrario</h3>
+                    <p class="text-gray-600">Estar dispuesto a ir en contra de la multitud. Comprar cuando otros tienen miedo y vender cuando son codiciosos.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Bitcoin Section -->
+        <!-- Crypto Section - New section for Bitcoin content -->
         <section id="crypto-section" class="hidden view-section">
             <div class="flex justify-start mb-6">
                 <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
@@ -689,68 +776,254 @@
                     <span>Volver al Inicio</span>
                 </button>
             </div>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Bitcoin</h2>
-            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Explora las características fundamentales y los beneficios de Bitcoin, el activo digital más importante.</p>
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8 text-center">Todo sobre Bitcoin</h2>
+            <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto text-center mb-8">
+                Descubre los fundamentos de la primera y más grande criptomoneda descentralizada.
+                Bitcoin es una innovación monetaria y tecnológica que ha cambiado el panorama financiero mundial.
+            </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
-                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Descentralización
-                        <span class="arrow text-xl transform transition-transform">▼</span>
-                    </button>
-                    <div class="details px-4 pb-4 text-gray-600">
-                        <p>Bitcoin opera en una red peer-to-peer sin una autoridad central. Esto significa que ninguna entidad (gobierno, banco o corporación) tiene control sobre Bitcoin, lo que la hace resistente a la censura y la manipulación. Las transacciones son verificadas por la red de participantes (nodos) y registradas en un libro contable público llamado blockchain.</p>
-                    </div>
+            <div class="flex justify-center mb-12">
+                <button id="viewBitcoinWhitePaper" class="bitcoin-whitepaper-button">
+                    <i class="fas fa-crown mr-2"></i>
+                    Ver White Paper de Bitcoin Explicado
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">¿Qué es Bitcoin?</h3>
+                    <p class="text-gray-600">Una moneda digital descentralizada, sin banco central ni administrador único, que se puede enviar de usuario a usuario en la red bitcoin peer-to-peer sin la necesidad de intermediarios.</p>
                 </div>
-                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
-                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Seguridad y Criptografía
-                        <span class="arrow text-xl transform transition-transform">▼</span>
-                    </button>
-                    <div class="details px-4 pb-4 text-gray-600">
-                        <p>Las transacciones de Bitcoin están protegidas por criptografía avanzada. Cada transacción se encadena a la anterior en la blockchain, haciendo que sea extremadamente difícil y costoso alterar registros pasados. Este diseño criptográfico asegura la integridad y la autenticidad de la red, protegiendo a los usuarios de fraudes y dobles gastos.</p>
-                    </div>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Blockchain</h3>
+                    <p class="text-gray-600">La tecnología subyacente de Bitcoin, un libro mayor distribuido y público, que registra todas las transacciones en "bloques" que se encadenan criptográficamente.</p>
                 </div>
-                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
-                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Oferta Limitada (Escasez)
-                        <span class="arrow text-xl transform transition-transform">▼</span>
-                    </button>
-                    <div class="details px-4 pb-4 text-gray-600">
-                        <p>La cantidad total de Bitcoins que pueden existir está limitada a 21 millones de unidades. Esta escasez programada lo hace deflacionario por naturaleza, a diferencia de las monedas fiduciarias que pueden imprimirse indefinidamente. Esta característica es clave para su propuesta de valor como "oro digital" y un activo de reserva de valor.</p>
-                    </div>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Minería de Bitcoin</h3>
+                    <p class="text-gray-600">El proceso de verificar y añadir nuevas transacciones al libro mayor de la blockchain. Los mineros compiten para resolver complejos problemas matemáticos, y el primero en hacerlo recibe una recompensa en Bitcoin.</p>
                 </div>
-                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
-                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Accesibilidad y Transacciones 24/7
-                        <span class="arrow text-xl transform transition-transform">▼</span>
-                    </button>
-                    <div class="details px-4 pb-4 text-gray-600">
-                        <p>Cualquier persona con una conexión a Internet puede acceder a Bitcoin, independientemente de su ubicación geográfica o estatus bancario. Las transacciones se pueden realizar en cualquier momento del día, cualquier día de la semana, sin necesidad de intermediarios, lo que lo hace ideal para pagos internacionales o para aquellos sin acceso a servicios bancarios tradicionales.</p>
-                    </div>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Descentralización</h3>
+                    <p class="text-gray-600">Bitcoin opera en una red distribuida globalmente, lo que significa que ninguna entidad única tiene control sobre él. Esto lo hace resistente a la censura y la manipulación.</p>
                 </div>
-                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
-                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Resistencia a la Censura
-                        <span class="arrow text-xl transform transition-transform">▼</span>
-                    </button>
-                    <div class="details px-4 pb-4 text-gray-600">
-                        <p>Debido a su naturaleza descentralizada, las transacciones de Bitcoin son difíciles de censurar o bloquear por parte de gobiernos o instituciones. Una vez que una transacción se incluye en la blockchain, es irreversible y no puede ser deshecha por terceros, lo que proporciona una mayor libertad financiera para los usuarios.</p>
-                    </div>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Escasez</h3>
+                    <p class="text-gray-600">La oferta total de Bitcoin está limitada a 21 millones de monedas, lo que lo convierte en un activo deflacionario, a diferencia de las monedas fiduciarias que pueden imprimirse indefinidamente.</p>
                 </div>
-                <div class="expandable-card bg-white border border-gray-200 rounded-lg">
-                    <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
-                        Potencial de Revalorización y Almacén de Valor
-                        <span class="arrow text-xl transform transition-transform">▼</span>
-                    </button>
-                    <div class="details px-4 pb-4 text-gray-600">
-                        <p>Históricamente, Bitcoin ha demostrado un alto potencial de revalorización a largo plazo, atrayendo a inversores que lo ven como un almacén de valor o "oro digital". Su diseño resistente a la inflación y su adopción creciente como activo financiero lo posicionan como una alternativa a los activos tradicionales en carteras de inversión diversificadas.</p>
-                    </div>
+                <div class="main-card p-6 rounded-lg text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Casos de Uso</h3>
+                    <p class="text-gray-600">Además de ser una forma de dinero digital, Bitcoin es considerado una "reserva de valor" (oro digital) y una herramienta para transferencias internacionales de bajo costo.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Herramientas Section -->
+
+        <!-- Bitcoin White Paper Explanation Section -->
+        <section id="bitcoin-whitepaper-section" class="hidden view-section">
+            <div class="flex justify-start mb-6">
+                <button id="backToBitcoinSection" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Volver a la Sección Bitcoin</span>
+                </button>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8 text-center">Explicación Detallada del White Paper de Bitcoin: Un Sistema de Efectivo Electrónico Peer-to-Peer</h1>
+            <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto text-center mb-8">El White Paper de Bitcoin, publicado por Satoshi Nakamoto en 2008, es el documento fundacional que describe cómo funciona Bitcoin. Es un texto denso y técnico, pero sus conceptos son esenciales para entender la primera criptomoneda del mundo. Aquí te ofrezco una explicación completa e intuitiva, sección por sección.</p>
+            <hr class="my-8 border-gray-300">
+
+            <!-- Index for Bitcoin White Paper sections -->
+            <div id="whitepaper-index" class="whitepaper-index max-w-4xl mx-auto mb-8">
+                <h3>Índice del White Paper de Bitcoin</h3>
+                <ul>
+                    <li><a href="#abstract-section">Abstract</a></li>
+                    <li><a href="#intro-section">1. Introducción</a></li>
+                    <li><a href="#transactions-section">2. Transacciones</a></li>
+                    <li><a href="#timestamp-server-section">3. Servidor de Sello de Tiempo</a></li>
+                    <li><a href="#proof-of-work-section">4. Prueba de Trabajo</a></li>
+                    <li><a href="#network-section">5. Red</a></li>
+                    <li><a href="#incentive-section">6. Incentivo</a></li>
+                    <li><a href="#disk-space-section">7. Reclamación de Espacio en Disco</a></li>
+                    <li><a href="#simplified-payment-verification-section">8. Verificación Simplificada de Pagos</a></li>
+                    <li><a href="#combining-splitting-value-section">9. Combinando y Dividiendo el Valor</a></li>
+                    <li><a href="#privacy-section">10. Privacidad</a></li>
+                    <li><a href="#calculations-section">11. Cálculos</a></li>
+                    <li><a href="#conclusion-whitepaper-section">12. Conclusión</a></li>
+                </ul>
+            </div>
+
+
+            <div class="max-w-4xl mx-auto space-y-8">
+                <section id="abstract-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Abstract</h2>
+                    <p class="text-gray-700 mb-4">El <strong>resumen</strong> establece la problemática central: los pagos online tradicionales dependen de <strong>instituciones financieras como terceros de confianza</strong>. Esto introduce debilidades como la <strong>imposibilidad de transacciones verdaderamente no reversibles</strong>, lo que aumenta costos y limita el tamaño de las transacciones (haciendo inviables los micropagos casuales). También exige que los comerciantes desconfíen de los clientes debido al riesgo de fraude.</p>
+                    <p class="text-gray-700">La solución propuesta es un sistema de efectivo electrónico <strong>"puramente peer-to-peer"</strong> basado en <strong>prueba criptográfica</strong>, no en la confianza. Para resolver el problema del <strong>"doble gasto"</strong> (usar la misma moneda dos veces), se usa una red peer-to-peer que "timestampa" (pone sello de tiempo) las transacciones. Esto se logra mediante una <strong>cadena de pruebas de trabajo (Proof-of-Work) basadas en hashes</strong>, creando un registro inalterable sin rehacer todo el trabajo. La cadena más larga no solo prueba la secuencia de eventos, sino que también demuestra que proviene de la mayor cantidad de poder de procesamiento (CPU). Mientras la mayoría del poder de CPU esté en manos de nodos honestos, estos generarán la cadena más larga y superarán a los atacantes. La red es simple y descentralizada: los mensajes se transmiten "a mejor esfuerzo" y los nodos pueden unirse o salir cuando quieran, aceptando la cadena más larga como la verdad.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="intro-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">1. Introducción</h2>
+                    <p class="text-gray-700 mb-4">La introducción profundiza en la motivación detrás de Bitcoin. Explica cómo el comercio en internet se ha vuelto dependiente de terceros de confianza (bancos), lo que, a pesar de funcionar, tiene fallas inherentes:</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li><strong>Transacciones no irreversibles:</strong> Los bancos pueden mediar disputas y revertir transacciones, lo que no permite un pago final.</li>
+                        <li><strong>Costos de mediación:</strong> La necesidad de mediación aumenta los costos de transacción, haciendo que los pequeños pagos (como para un café) no sean prácticos.</li>
+                        <li><strong>Pérdida de pagos no reversibles:</strong> Algunos servicios no son reversibles (ej. streaming de música), pero el pago sí podría serlo, creando un desequilibrio.</li>
+                        <li><strong>Necesidad de confianza:</strong> La posibilidad de reversión obliga a los comerciantes a desconfiar de los clientes y pedir más información de la necesaria.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">Lo que se necesita es un <strong>sistema de pago electrónico basado en prueba criptográfica, no en la confianza</strong>. Esto permitiría transacciones directas entre dos partes. Para lograr esto sin un tercero, se propone un servidor de sellos de tiempo distribuido que genera pruebas computacionales del orden cronológico de las transacciones. El sistema es seguro siempre que los nodos honestos controlen más poder de CPU que cualquier grupo de atacantes.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="transactions-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">2. Transacciones</h2>
+                    <p class="text-gray-700 mb-4">Aquí se define la <strong>"moneda electrónica"</strong> como una <strong>cadena de firmas digitales</strong>.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Cada dueño transfiere la moneda al siguiente <strong>firmando digitalmente un hash</strong> de la transacción anterior y la clave pública del nuevo dueño.</li>
+                        <li>El nuevo dueño (beneficiario) puede <strong>verificar las firmas</strong> para confirmar la cadena de propiedad.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">El <strong>problema fundamental</strong> que se aborda es el <strong>doble gasto</strong>: cómo el beneficiario puede saber que el dueño anterior no gastó la misma moneda en otro lugar. La solución común es un banco central ("mint") que verifica cada transacción para el doble gasto. Sin embargo, esto hace que el sistema dependa de una sola entidad, perdiendo la esencia de la "libertad" del efectivo físico.</p>
+                    <p class="text-gray-700 mt-4">Para evitar un tercero, las transacciones deben ser <strong>anunciadas públicamente</strong>. Se necesita un sistema donde los participantes acuerden una única historia del orden de las transacciones. El beneficiario necesita una prueba de que, en el momento de la transacción, la mayoría de los nodos acordaron que fue la primera transacción de esa moneda.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="timestamp-server-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">3. Servidor de Sello de Tiempo (Timestamp Server)</h2>
+                    <p class="text-gray-700 mb-4">La solución propuesta comienza con un <strong>servidor de sello de tiempo</strong>.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Un servidor de sello de tiempo funciona tomando el <strong>hash de un bloque de ítems</strong> (transacciones) y publicando ampliamente ese hash (históricamente, en periódicos o publicaciones Usenet).</li>
+                        <li>El sello de tiempo prueba que <strong>los datos deben haber existido</strong> en ese momento para poder ser incluidos en el hash.</li>
+                        <li>Cada nuevo sello de tiempo incluye el <strong>hash del sello de tiempo anterior</strong>, formando una <strong>cadena</strong>. Cada nuevo sello de tiempo refuerza la validez de los anteriores.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">Esto sienta las bases para la <strong>blockchain</strong>: una cadena de bloques, donde cada bloque está vinculado criptográficamente al anterior a través de su hash, creando una secuencia inmutable en el tiempo.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="proof-of-work-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">4. Prueba de Trabajo (Proof-of-Work)</h2>
+                    <p class="text-gray-700 mb-4">Para implementar un servidor de sellos de tiempo <strong>distribuido y peer-to-peer</strong> (sin una autoridad central), se introduce un sistema de <strong>prueba de trabajo (Proof-of-Work - PoW)</strong>, similar a Hashcash de Adam Back.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>La PoW implica buscar un valor (un "nonce") que, cuando se aplica un hash (como SHA-256) al bloque, el hash resultante comience con un número determinado de ceros.</li>
+                        <li>El <strong>trabajo requerido es exponencial</strong> con el número de ceros, pero la <strong>verificación es trivial</strong> (solo requiere ejecutar un hash).</li>
+                        <li>Una vez que se ha gastado el esfuerzo de CPU para encontrar el PoW para un bloque, <strong>ese bloque no puede ser cambiado</strong> sin rehacer ese trabajo. Si se cambia un bloque anterior, habría que rehacer el PoW de todos los bloques subsiguientes en la cadena.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">La PoW también resuelve el problema de la <strong>representación en la toma de decisiones por mayoría</strong>. En lugar de "una IP, un voto" (que es vulnerable a ataques Sybil), la PoW es <strong>"una CPU, un voto"</strong>.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>La decisión mayoritaria está representada por la <strong>cadena más larga</strong>, que es la que tiene la mayor cantidad de esfuerzo de PoW invertido.</li>
+                        <li>Si los nodos honestos controlan la mayoría del poder de CPU, su cadena crecerá más rápido y superará cualquier cadena competidora.</li>
+                        <li>Un atacante tendría que rehacer el PoW del bloque que quiere modificar y de todos los bloques posteriores, para luego superar el trabajo de los nodos honestos. La probabilidad de que un atacante más lento lo logre disminuye exponencialmente a medida que se añaden más bloques.</li>
+                        <li>La <strong>dificultad de la PoW se ajusta automáticamente</strong> (mediante un promedio móvil) para compensar los cambios en la velocidad del hardware y el interés en operar nodos, apuntando a un número promedio de bloques por hora (aproximadamente 10 minutos en Bitcoin).</li>
+                    </ul>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="network-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">5. Red (Network)</h2>
+                    <p class="text-gray-700 mb-4">Se describen los pasos para que la red funcione:</p>
+                    <ol class="list-decimal list-inside text-gray-700 space-y-2">
+                        <li>Las <strong>nuevas transacciones se difunden</strong> a todos los nodos.</li>
+                        <li>Cada nodo **recopila nuevas transacciones** en un bloque.</li>
+                        <li>Cada nodo **trabaja en encontrar un PoW** difícil para su bloque.</li>
+                        <li>Cuando un nodo encuentra un PoW, **difunde el bloque** a todos los nodos.</li>
+                        <li>Los nodos **aceptan el bloque solo si todas las transacciones son válidas** y no han sido ya gastadas.</li>
+                        <li>Los nodos expresan su aceptación trabajando en la **creación del siguiente bloque**, usando el hash del bloque aceptado como el hash anterior.</li>
+                    </ol>
+                    <p class="text-gray-700 mt-4">Los nodos siempre consideran la <strong>cadena más larga como la correcta</strong> y continúan trabajando en extenderla. Si dos nodos difunden diferentes versiones del siguiente bloque simultáneamente, algunos nodos pueden recibir una u otra primero. Trabajarán en la primera que recibieron, pero guardarán la otra rama en caso de que se haga más larga. El desempate ocurre cuando se encuentra el siguiente PoW y una rama se vuelve más larga; los nodos que estaban trabajando en la rama más corta se cambiarán a la más larga.</p>
+                    <p class="text-gray-700 mt-2">La difusión de transacciones y bloques es **tolerante a mensajes perdidos**. Si un nodo no recibe un bloque, lo solicitará cuando reciba el siguiente bloque y se dé cuenta de que le falta uno.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="incentive-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">6. Incentivo</h2>
+                    <p class="text-gray-700 mb-4">Se introduce el sistema de <strong>recompensa por bloque</strong> (lo que hoy conocemos como <strong>minería</strong>).</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>La primera transacción en un bloque es una <strong>transacción especial</strong> que crea nuevas monedas y las asigna al creador del bloque (el **minero**).</li>
+                        <li>Esto incentiva a los nodos a **apoyar la red** y proporciona una forma de **distribuir inicialmente las monedas** en circulación, ya que no hay una autoridad central que las emita. La adición constante de nuevas monedas es análoga a la extracción de oro.</li>
+                        <li>El incentivo también puede ser financiado con **tasas de transacción**. Si el valor de salida de una transacción es menor que su valor de entrada, la diferencia es una tarifa que se añade al incentivo del bloque.</li>
+                        <li>Una vez que un número predeterminado de monedas ha entrado en circulación (los 21 millones de Bitcoin), **el incentivo puede pasar completamente a las tasas de transacción**, haciendo el sistema "completamente libre de inflación".</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">El incentivo también fomenta la **honestidad**. Si un atacante codicioso acumulara más poder de CPU que los nodos honestos, tendría que elegir entre usarlo para defraudar (doble gasto) o para generar nuevas monedas. Se considera más rentable para él jugar según las reglas, ya que así gana más monedas nuevas que todos los demás combinados, que socavar el sistema y la validez de su propia riqueza.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="disk-space-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">7. Reclamación de Espacio en Disco (Reclaiming Disk Space)</h2>
+                    <p class="text-gray-700 mb-4">Para ahorrar espacio en disco, las transacciones gastadas (una vez que la transacción más reciente de una moneda está "enterrada" bajo suficientes bloques) pueden ser descartadas.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Para facilitar esto sin romper el hash del bloque, las transacciones se **hashan en un Árbol de Merkle** (Merkle Tree). Solo la raíz de este árbol se incluye en el hash del bloque.</li>
+                        <li>Los bloques antiguos pueden compactarse "recortando" las ramas del árbol de Merkle. Los hashes intermedios no necesitan ser almacenados.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">Esto significa que no necesitas almacenar el historial completo de cada transacción individual para verificar que es válida, solo la raíz de Merkle del bloque y la rama específica que prueba que tu transacción estaba en ese bloque. El White Paper calcula que un encabezado de bloque (sin transacciones) sería de unos 80 bytes, y prevé que el almacenamiento no sería un problema incluso si los encabezados deben mantenerse en memoria, considerando la ley de Moore.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="simplified-payment-verification-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">8. Verificación Simplificada de Pagos (Simplified Payment Verification - SPV)</h2>
+                    <p class="text-gray-700 mb-4">Es posible verificar pagos sin ejecutar un nodo de red completo.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Un usuario solo necesita mantener una **copia de los encabezados de los bloques de la cadena más larga** de PoW. Puede obtenerlos consultando los nodos de la red hasta estar convencido de tener la cadena más larga.</li>
+                        <li>También necesita obtener la **rama de Merkle que vincula su transacción** al bloque en el que está sellada.</li>
+                        <li>No puede verificar la transacción por sí mismo, pero al vincularla a un lugar en la cadena, puede ver que un nodo de la red la aceptó, y los bloques añadidos posteriormente confirman aún más que la red la aceptó.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">Esta verificación es fiable siempre que los nodos honestos controlen la red. Sin embargo, es más vulnerable si la red es dominada por un atacante, ya que el método simplificado podría ser engañado mientras el atacante mantenga el control. Una estrategia de protección sería aceptar alertas de nodos de red cuando detecten un bloque inválido, lo que incitaría al software del usuario a descargar el bloque completo y las transacciones alertadas para confirmar la inconsistencia. Las empresas que reciben pagos frecuentes probablemente querrán ejecutar sus propios nodos para una seguridad más independiente y una verificación más rápida.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="combining-splitting-value-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">9. Combinando y Dividiendo el Valor (Combining and Splitting Value)</h2>
+                    <p class="text-gray-700 mb-4">Para que el valor pueda ser dividido y combinado (en lugar de tener una transacción separada para cada "centavo"), las transacciones contienen **múltiples entradas y salidas**.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Normalmente, habrá una **sola entrada de una transacción anterior más grande** o **múltiples entradas que combinan cantidades más pequeñas**.</li>
+                        <li>Habrá **a lo sumo dos salidas**: una para el pago en sí y otra para devolver el **cambio** al remitente, si lo hubiera.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">El White Paper señala que la ramificación de transacciones (donde una transacción depende de varias, y esas a su vez de muchas más) no es un problema, ya que nunca es necesario extraer una copia completa e independiente del historial de una transacción.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="privacy-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">10. Privacidad</h2>
+                    <p class="text-gray-700 mb-4">El modelo bancario tradicional logra la privacidad limitando el acceso a la información a las partes involucradas y al tercero de confianza. Dado que en Bitcoin todas las transacciones deben ser anunciadas públicamente, se mantiene la privacidad de otra manera: **manteniendo las claves públicas anónimas**.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>El público puede ver que alguien está enviando una cantidad a otra persona, pero **sin información que vincule la transacción a ninguna identidad**.</li>
+                        <li>Esto es similar a la información que liberan las bolsas de valores, donde el tiempo y el tamaño de las operaciones individuales son públicos, pero no quiénes fueron las partes.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">Como una "barrera de seguridad" adicional, se debe usar un **nuevo par de claves para cada transacción** para evitar que se vinculen a un propietario común. Sin embargo, algunas vinculaciones son inevitables con las transacciones de múltiples entradas, que necesariamente revelan que sus entradas pertenecían al mismo propietario. El riesgo es que si se revela la identidad del propietario de una clave, esa vinculación podría revelar otras transacciones que le pertenecían.</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="calculations-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">11. Cálculos (Calculations)</h2>
+                    <p class="text-gray-700 mb-4">Esta sección es altamente técnica y se enfoca en la **probabilidad de que un atacante pueda generar una cadena alternativa más rápido que la cadena honesta**.</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Se considera un escenario en el que un atacante intenta gastar dos veces una moneda ("doble gasto"). El sistema no permite crear dinero de la nada ni tomar dinero que no le pertenece. Un atacante solo puede intentar revertir una de sus propias transacciones.</li>
+                        <li>La carrera entre la cadena honesta y la cadena del atacante se caracteriza como un **"Paseo Aleatorio Binomial"** (Binomial Random Walk). El éxito es que la cadena honesta se extienda un bloque (+1), el fracaso es que la cadena del atacante se extienda un bloque (-1).</li>
+                        <li>La probabilidad de que un atacante "alcance" una cadena con un déficit de <code>z</code> bloques se compara con el **"Problema de la Ruina del Jugador"** (Gambler's Ruin problem).</li>
+                        <li>Se presenta una fórmula: <code>$q_z = (q/p)^z$</code> si <code>$p > q$</code>, donde <code>p</code> es la probabilidad de que un nodo honesto encuentre el siguiente bloque, <code>q</code> es la probabilidad de que el atacante lo encuentre, y <code>z</code> es el número de bloques que el atacante está detrás.</li>
+                        <li>Esta fórmula muestra que la probabilidad de que un atacante alcance la cadena honesta **disminuye exponencialmente** a medida que aumenta el número de bloques que la cadena honesta ha "adelantado".</li>
+                        <li>Se proporcionan tablas con resultados de esta probabilidad para diferentes valores de <code>q</code> y <code>z</code>, demostrando cuán rápidamente la probabilidad se vuelve insignificante.</li>
+                        <li>La sección concluye que el receptor de una transacción necesita esperar hasta que la transacción haya sido incluida en un bloque y una cierta cantidad de bloques (<code>z</code>) se hayan añadido después para estar suficientemente seguro de que el remitente no puede revertirla.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">El punto clave aquí es que, incluso con una ventaja computacional, la dificultad para revertir transacciones históricas aumenta exponencialmente con el número de confirmaciones (bloques posteriores).</p>
+                </section>
+                <hr class="my-8 border-gray-300">
+
+                <section id="conclusion-whitepaper-section" class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">12. Conclusión</h2>
+                    <p class="text-gray-700 mb-4">La conclusión recapitula los puntos clave del sistema propuesto para **transacciones electrónicas sin depender de la confianza**:</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Se parte del marco de monedas hechas de firmas digitales, que controlan fuertemente la propiedad, pero son incompletas sin una forma de prevenir el doble gasto.</li>
+                        <li>La solución propuesta es una **red peer-to-peer que utiliza prueba de trabajo para registrar un historial público de transacciones** que se vuelve computacionalmente inviable de cambiar para un atacante, siempre que los nodos honestos controlen la mayoría del poder de CPU.</li>
+                        <li>La red es **robusta debido a su simplicidad no estructurada**. Los nodos trabajan simultáneamente con poca coordinación.</li>
+                        <li>**No necesitan ser identificados**, ya que los mensajes no se dirigen a un lugar particular y solo necesitan ser entregados "a mejor esfuerzo".</li>
+                        <li>Los nodos pueden **salir y volver a unirse a la red a voluntad**, aceptando la cadena de prueba de trabajo como prueba de lo que ocurrió mientras estaban ausentes.</li>
+                        <li>**Votan con su poder de CPU**, expresando su aceptación de bloques válidos al trabajar para extenderlos y rechazando bloques inválidos al negarse a trabajar en ellos.</li>
+                        <li>Cualquier regla e incentivo necesario puede ser impuesto con este mecanismo de consenso.</li>
+                    </ul>
+                    <p class="text-gray-700 mt-4">En esencia, el White Paper de Bitcoin presenta una visión revolucionaria de dinero digital que no requiere un intermediario, utilizando la criptografía y la teoría de juegos para garantizar la seguridad y la descententralización.</p>
+                </section>
+            </div>
+        </section>
+
+        <!-- Herramientas Section - New section with calculators -->
         <section id="herramientas-section" class="hidden view-section">
             <div class="flex justify-start mb-6">
                 <button class="back-to-home bg-gray-200 text-gray-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-gray-300 transition-colors">
@@ -760,59 +1033,63 @@
                     <span>Volver al Inicio</span>
                 </button>
             </div>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Herramientas de Inversión</h2>
-            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Calculadoras interactivas para simular y planificar tus inversiones.</p>
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8 text-center">Herramientas de Inversión</h2>
+            <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto text-center mb-8">
+                Calculadoras útiles para ayudarte a planificar y entender el potencial de tus inversiones.
+            </p>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
                 <!-- Bitcoin DCA Calculator -->
-                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-md">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Calculadora DCA de Bitcoin (Simulación)</h3>
-                    <p class="text-sm text-gray-500 mb-4 text-center">Simula el crecimiento de una inversión mensual en Bitcoin. *El precio histórico es una aproximación para fines ilustrativos.*</p>
+                <div class="main-card p-6 rounded-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Calculadora de DCA en Bitcoin</h3>
+                    <p class="text-gray-600 mb-6 text-center">Simula el efecto del Promedio de Costo en Dólares (DCA) al invertir en Bitcoin.</p>
                     <div class="space-y-4">
                         <div>
-                            <label for="btcMonthlyAmount" class="block text-sm font-medium text-gray-700">Inversión Mensual ($):</label>
-                            <input type="number" id="btcMonthlyAmount" value="100" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                            <label for="btcMonthlyAmount" class="block text-sm font-medium text-gray-700">Cantidad Mensual a Invertir ($):</label>
+                            <input type="number" id="btcMonthlyAmount" value="100" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
                         </div>
                         <div>
-                            <label for="btcStartYear" class="block text-sm font-medium text-gray-700">Año de Inicio (desde 2010):</label>
-                            <input type="number" id="btcStartYear" value="2015" min="2010" max="2023" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                            <label for="btcStartYear" class="block text-sm font-medium text-gray-700">Año de Inicio de Inversión:</label>
+                            <input type="number" id="btcStartYear" value="2017" min="2010" max="2025" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
                         </div>
-                        <button id="calculateBtcDCA" class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-yellow-600 transition-colors">Calcular Inversión</button>
-                    </div>
-                    <div class="mt-6">
-                        <p class="text-center text-lg font-semibold text-gray-800">Valor Final Estimado: <span id="btcResult" class="text-green-600">$0.00</span></p>
-                        <div class="chart-container mt-4">
+                        <button id="calculateBtcDCA" class="w-full bg-yellow-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-yellow-600 transition-colors shadow-md">Calcular DCA</button>
+                        <div class="mt-4 text-center">
+                            <p class="text-lg font-medium text-gray-700">Valor Final Estimado:</p>
+                            <span id="btcResult" class="text-3xl font-bold text-yellow-700">$0.00</span>
+                        </div>
+                        <div class="chart-container">
                             <canvas id="btcChart"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <!-- Compound Interest Calculator -->
-                <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-md">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Calculadora de Interés Compuesto</h3>
-                    <p class="text-sm text-gray-500 mb-4 text-center">Calcula el crecimiento de tu dinero con depósitos regulares.</p>
+                <div class="main-card p-6 rounded-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Calculadora de Interés Compuesto</h3>
+                    <p class="text-gray-600 mb-6 text-center">Visualiza el poder del interés compuesto a lo largo del tiempo.</p>
                     <div class="space-y-4">
                         <div>
-                            <label for="initialAmount" class="block text-sm font-medium text-gray-700">Monto Inicial ($):</label>
-                            <input type="number" id="initialAmount" value="1000" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                            <label for="initialAmount" class="block text-sm font-medium text-gray-700">Cantidad Inicial ($):</label>
+                            <input type="number" id="initialAmount" value="1000" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
                         </div>
                         <div>
-                            <label for="monthlyDeposit" class="block text-sm font-medium text-gray-700">Depósito Mensual ($):</label>
-                            <input type="number" id="monthlyDeposit" value="50" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                            <label for="monthlyDeposit" class="block text-sm font-medium text-gray-700">Depósito Mensual Adicional ($):</label>
+                            <input type="number" id="monthlyDeposit" value="50" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
                         </div>
                         <div>
                             <label for="annualInterestRate" class="block text-sm font-medium text-gray-700">Tasa de Interés Anual (%):</label>
-                            <input type="number" id="annualInterestRate" value="7" min="0" max="100" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                            <input type="number" id="annualInterestRate" value="7" min="0" max="100" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
                         </div>
                         <div>
                             <label for="investmentYears" class="block text-sm font-medium text-gray-700">Años de Inversión:</label>
-                            <input type="number" id="investmentYears" value="10" min="1" max="50" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                            <input type="number" id="investmentYears" value="10" min="1" max="50" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
                         </div>
-                        <button id="calculateCompoundInterest" class="w-full bg-green-500 text-white py-2 px-4 rounded-md font-semibold hover:bg-green-600 transition-colors">Calcular Interés Compuesto</button>
-                    </div>
-                    <div class="mt-6">
-                        <p class="text-center text-lg font-semibold text-gray-800">Valor Final Estimado: <span id="compoundResult" class="text-green-600">$0.00</span></p>
-                        <div class="chart-container mt-4">
+                        <button id="calculateCompoundInterest" class="w-full bg-teal-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-teal-600 transition-colors shadow-md">Calcular Interés Compuesto</button>
+                        <div class="mt-4 text-center">
+                            <p class="text-lg font-medium text-gray-700">Valor Final Estimado:</p>
+                            <span id="compoundResult" class="text-3xl font-bold text-teal-700">$0.00</span>
+                        </div>
+                        <div class="chart-container">
                             <canvas id="compoundChart"></canvas>
                         </div>
                     </div>
@@ -836,8 +1113,9 @@
             const globantAnalysisView = document.getElementById('globant-analysis-view');
             const wikiSection = document.getElementById('wiki-section');
             const principiosSection = document.getElementById('principios-section');
-            const cryptoSection = document.getElementById('crypto-section');
+            const cryptoSection = document.getElementById('crypto-section'); 
             const herramientasSection = document.getElementById('herramientas-section');
+            const bitcoinWhitePaperSection = document.getElementById('bitcoin-whitepaper-section'); 
 
             // Navigation buttons
             const homeButton = document.getElementById('homeButton');
@@ -845,7 +1123,7 @@
             const investigacionesNavLink = document.getElementById('investigacionesNavLink');
             const wikiNavLink = document.getElementById('wikiNavLink');
             const principiosNavLink = document.getElementById('principiosNavLink');
-            const cryptoNavLink = document.getElementById('cryptoNavLink');
+            const cryptoNavLink = document.getElementById('cryptoNavLink'); 
             const herramientasNavLink = document.getElementById('herramientasNavLink');
 
             // Quick links from home page
@@ -857,38 +1135,40 @@
 
             // Card specific buttons
             const globantCard = document.getElementById('globant-card');
+            const viewBitcoinWhitePaperButton = document.getElementById('viewBitcoinWhitePaper'); 
 
             // Back to home buttons (common for all sub-sections)
             const backToHomeBtns = document.querySelectorAll('.back-to-home');
             const backToInvestigacionesBtn = document.querySelector('.back-to-investigaciones');
+            const backToBitcoinSectionBtn = document.getElementById('backToBitcoinSection'); 
 
             const rainLayer = document.getElementById('rain-layer');
 
             // Function to show a specific section, hide others, change background and manage rain
             function showSection(sectionToShow) {
-                [homeSection, investigacionesSection, globantAnalysisView, wikiSection, principiosSection, cryptoSection, herramientasSection].forEach(section => {
-                    section.classList.add('hidden');
+                const allSections = [homeSection, investigacionesSection, globantAnalysisView, wikiSection, principiosSection, cryptoSection, herramientasSection, bitcoinWhitePaperSection];
+                allSections.forEach(section => {
+                    if (section) { 
+                        section.classList.add('hidden');
+                    }
                 });
-                sectionToShow.classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
+                if (sectionToShow) { 
+                    sectionToShow.classList.remove('hidden');
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
 
-                // Remove existing background classes
                 document.body.classList.remove('bg-custom-blue-light', 'bg-custom-orange-light');
                 
-                // Clear existing rain items
                 rainLayer.innerHTML = '';
 
-                // Apply new background color and rain effect
-                if (sectionToShow.id === 'crypto-section') {
+                if (sectionToShow && sectionToShow.id === 'crypto-section') {
                     document.body.classList.add('bg-custom-orange-light');
-                    createRainEffect('🪙', 25, '20s', '4s'); // Bitcoin coins
+                    createRainEffect('🪙', 25, '20s', '4s'); 
                 } else {
                     document.body.classList.add('bg-custom-blue-light');
-                    // No rain effect for other sections
                 }
 
-                // Special handling for Globant Analysis View to re-initialize charts
-                if (sectionToShow.id === 'globant-analysis-view') {
+                if (sectionToShow && sectionToShow.id === 'globant-analysis-view') {
                     initializeGlobantCharts();
                 }
             }
@@ -900,11 +1180,11 @@
                     rainItem.classList.add('rain-item');
                     rainItem.textContent = emoji;
                     
-                    const size = Math.random() * (24 - 10) + 10; // Random size between 10px and 24px
+                    const size = Math.random() * (24 - 10) + 10; 
                     rainItem.style.fontSize = `${size}px`;
-                    rainItem.style.left = `${Math.random() * 100}vw`; // Random horizontal position
-                    rainItem.style.animationDuration = `${parseFloat(animationDuration) + (Math.random() * 5 - 2.5)}s`; // Slight variation
-                    rainItem.style.animationDelay = `${Math.random() * parseFloat(animationDelaySpread) * -1}s`; // Staggered start
+                    rainItem.style.left = `${Math.random() * 100}vw`; 
+                    rainItem.style.animationDuration = `${parseFloat(animationDuration) + (Math.random() * 5 - 2.5)}s`; 
+                    rainItem.style.animationDelay = `${Math.random() * parseFloat(animationDelaySpread) * -1}s`; 
                     
                     rainLayer.appendChild(rainItem);
                 }
@@ -917,7 +1197,7 @@
             investigacionesNavLink.addEventListener('click', () => showSection(investigacionesSection));
             wikiNavLink.addEventListener('click', () => showSection(wikiSection));
             principiosNavLink.addEventListener('click', () => showSection(principiosSection));
-            cryptoNavLink.addEventListener('click', () => showSection(cryptoSection));
+            cryptoNavLink.addEventListener('click', () => showSection(cryptoSection)); 
             herramientasNavLink.addEventListener('click', () => showSection(herramientasSection));
 
             // Event Listeners for quick links from home
@@ -931,7 +1211,7 @@
                 quickLinkPrincipios.addEventListener('click', () => showSection(principiosSection));
             }
             if (quickLinkCrypto) {
-                quickLinkCrypto.addEventListener('click', () => showSection(cryptoSection));
+                quickLinkCrypto.addEventListener('click', () => showSection(cryptoSection)); 
             }
             if (quickLinkHerramientas) {
                 quickLinkHerramientas.addEventListener('click', () => showSection(herramientasSection));
@@ -941,7 +1221,14 @@
             if (globantCard) {
                 globantCard.addEventListener('click', () => {
                     showSection(globantAnalysisView);
-                    initializeGlobantCharts(); // Re-initialize charts when Globant view becomes visible
+                    initializeGlobantCharts(); 
+                });
+            }
+
+            // Event listener for "Ver White Paper de Bitcoin" button (now inside #crypto-section)
+            if (viewBitcoinWhitePaperButton) {
+                viewBitcoinWhitePaperButton.addEventListener('click', () => {
+                    showSection(bitcoinWhitePaperSection);
                 });
             }
 
@@ -954,8 +1241,15 @@
 
             if (backToInvestigacionesBtn) {
                 backToInvestigacionesBtn.addEventListener('click', (event) => {
-                    event.preventDefault(); // Prevent default back-to-home behavior
+                    event.preventDefault(); 
                     showSection(investigacionesSection);
+                });
+            }
+
+            // Event listener for "Volver a la Sección Bitcoin" button
+            if (backToBitcoinSectionBtn) {
+                backToBitcoinSectionBtn.addEventListener('click', () => {
+                    showSection(cryptoSection);
                 });
             }
 
@@ -1217,6 +1511,7 @@
             });
 
             // --- Bitcoin DCA Calculator Logic ---
+            // Moved to Herramientas section, check if elements exist
             const btcMonthlyAmountInput = document.getElementById('btcMonthlyAmount');
             const btcStartYearInput = document.getElementById('btcStartYear');
             const calculateBtcDCAButton = document.getElementById('calculateBtcDCA');
@@ -1231,6 +1526,9 @@
             };
 
             function calculateBtcDCA() {
+                // Ensure elements exist before trying to access their properties
+                if (!btcMonthlyAmountInput || !btcStartYearInput || !btcResultSpan || !btcChartCanvas) return;
+
                 const monthlyAmount = parseFloat(btcMonthlyAmountInput.value);
                 const startYear = parseInt(btcStartYearInput.value);
                 const currentYear = new Date().getFullYear();
@@ -1307,9 +1605,14 @@
                     }
                 });
             }
-            calculateBtcDCAButton.addEventListener('click', calculateBtcDCA);
+            // Only add event listener if button exists
+            if (calculateBtcDCAButton) {
+                calculateBtcDCAButton.addEventListener('click', calculateBtcDCA);
+            }
+
 
             // --- Compound Interest Calculator Logic ---
+            // Moved to Herramientas section, check if elements exist
             const initialAmountInput = document.getElementById('initialAmount');
             const monthlyDepositInput = document.getElementById('monthlyDeposit');
             const annualInterestRateInput = document.getElementById('annualInterestRate');
@@ -1320,6 +1623,9 @@
             let compoundChartInstance = null;
 
             function calculateCompoundInterest() {
+                // Ensure elements exist before trying to access their properties
+                if (!initialAmountInput || !monthlyDepositInput || !annualInterestRateInput || !investmentYearsInput || !compoundResultSpan || !compoundChartCanvas) return;
+
                 let principal = parseFloat(initialAmountInput.value);
                 const monthlyDeposit = parseFloat(monthlyDepositInput.value);
                 const annualRate = parseFloat(annualInterestRateInput.value) / 100;
@@ -1398,13 +1704,19 @@
                     }
                 });
             }
-            calculateCompoundInterestButton.addEventListener('click', calculateCompoundInterest);
+            // Only add event listener if button exists
+            if (calculateCompoundInterestButton) {
+                calculateCompoundInterestButton.addEventListener('click', calculateCompoundInterest);
+            }
 
 
             // Initial view and chart calculations
-            showSection(homeSection); // Ensure home is shown with its background and rain effect
-            calculateBtcDCA();
-            calculateCompoundInterest();
+            showSection(homeSection); 
+            // Only call calculator functions if their elements exist
+            if (herramientasSection) {
+                calculateBtcDCA();
+                calculateCompoundInterest();
+            }
         });
     </script>
 </body>
